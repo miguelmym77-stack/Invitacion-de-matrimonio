@@ -22,9 +22,9 @@ import {
   Play,
   Send,
   Share2,
+  Shirt,
   Sparkles,
   Star,
-  Users,
   Volume2,
   X,
 } from 'lucide-react';
@@ -34,13 +34,14 @@ import weddingMelody from './assets/wedding-melody.mp3';
 
 const queryClient = new QueryClient();
 
-type ModuleKey = 'cover' | 'story' | 'details' | 'itinerary' | 'rsvp' | 'location' | 'gallery' | 'gift' | 'music' | 'sparkles';
+type ModuleKey = 'cover' | 'story' | 'details' | 'dresscode' | 'itinerary' | 'rsvp' | 'location' | 'gallery' | 'gift' | 'music' | 'sparkles';
 type ModuleSettings = Record<ModuleKey, boolean>;
 
 const defaultModules: ModuleSettings = {
   cover: true,
   story: true,
   details: true,
+  dresscode: true,
   itinerary: true,
   rsvp: true,
   location: true,
@@ -54,6 +55,7 @@ const moduleLabels: Record<ModuleKey, { label: string; note: string }> = {
   cover: { label: 'Portada y cuenta regresiva', note: 'La primera impresión' },
   story: { label: 'Nuestra historia', note: 'Un pedacito de nosotros' },
   details: { label: 'Detalles del evento', note: 'Fecha, hora y celebración' },
+  dresscode: { label: 'Código de vestuario', note: 'La guía para vestir ese día' },
   itinerary: { label: 'Itinerario', note: 'Para vivir el día juntos' },
   rsvp: { label: 'Confirmación', note: 'Respuesta de tus invitados' },
   location: { label: 'Ubicación', note: 'Cómo llegar' },
@@ -67,6 +69,7 @@ const pageOrder: Array<{ key: ModuleKey; id: string; label: string }> = [
   { key: 'cover', id: 'inicio', label: 'Portada' },
   { key: 'story', id: 'historia', label: 'Historia' },
   { key: 'details', id: 'celebracion', label: 'Celebración' },
+  { key: 'dresscode', id: 'vestuario', label: 'Vestuario' },
   { key: 'itinerary', id: 'itinerario', label: 'Itinerario' },
   { key: 'rsvp', id: 'confirmacion', label: 'Confirmar' },
   { key: 'location', id: 'ubicacion', label: 'Ubicación' },
@@ -221,6 +224,11 @@ function InvitationPage() {
         {modules.details && (
           <PageFrame pageKey="details" nextPage={visiblePages[visiblePages.findIndex((page) => page.key === 'details') + 1]}>
             <Details />
+          </PageFrame>
+        )}
+        {modules.dresscode && (
+          <PageFrame pageKey="dresscode" nextPage={visiblePages[visiblePages.findIndex((page) => page.key === 'dresscode') + 1]}>
+            <DressCode />
           </PageFrame>
         )}
         {modules.itinerary && (
@@ -409,8 +417,6 @@ function Details() {
     { icon: CalendarDays, label: 'Fecha', value: 'Sábado 7 de noviembre de 2026' },
     { icon: Clock3, label: 'Hora', value: '4:00 p. m. · llegada de invitados' },
     { icon: Landmark, label: 'Lugar', value: 'Hacienda Hotel La Extremadura · Casa Principal' },
-    { icon: Users, label: 'Vestimenta', value: 'Vestimenta formal' },
-    { icon: Palette, label: 'Colores reservados', value: 'Blanco, gris claro y plateado · Por favor, no uses estos colores' },
   ];
   return (
     <section id="celebracion" className="rounded-[2rem] border border-[#d3d9de] bg-white px-6 py-12 sm:px-12 sm:py-16">
@@ -424,6 +430,38 @@ function Details() {
               <p className="mt-2 max-w-[210px] text-sm leading-5 text-[#64717b]">{value}</p>
             </div>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function DressCode() {
+  return (
+    <section id="vestuario" className="grid gap-12 rounded-[2rem] border border-[#d3d9de] bg-[#f7f9fa] px-6 py-12 sm:px-12 sm:py-16 lg:grid-cols-[.8fr_1.2fr] lg:items-center">
+      <div>
+        <SectionHeading
+          eyebrow="Código de vestuario"
+          title={<>Una noche<br /><em>para celebrar.</em></>}
+          intro="Queremos compartir este día contigo con elegancia, alegría y mucho amor."
+        />
+        <div className="mt-8 inline-flex items-center gap-3 rounded-full border border-[#cbd3d8] bg-white/75 px-4 py-2.5 text-xs font-semibold uppercase tracking-[.14em] text-[#65747e]">
+          <Shirt size={16} strokeWidth={1.5} />
+          Vestimenta formal
+        </div>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="rounded-[1.5rem] border border-[#d3d9de] bg-white p-6 shadow-paper">
+          <Shirt size={22} strokeWidth={1.4} className="text-[#7d8992]" />
+          <p className="mt-6 text-[10px] font-semibold uppercase tracking-[.2em] text-[#89949d]">Vestimenta</p>
+          <h3 className="script mt-2 text-5xl leading-none text-[#64717b]">Formal</h3>
+          <p className="mt-4 text-sm leading-6 text-[#74808a]">Te invitamos a vestir de manera elegante y apropiada para acompañarnos en esta celebración.</p>
+        </div>
+        <div className="rounded-[1.5rem] border border-[#d3d9de] bg-white p-6 shadow-paper">
+          <Palette size={22} strokeWidth={1.4} className="text-[#7d8992]" />
+          <p className="mt-6 text-[10px] font-semibold uppercase tracking-[.2em] text-[#89949d]">Colores reservados</p>
+          <h3 className="script mt-2 text-5xl leading-none text-[#64717b]">Por favor, no los uses</h3>
+          <p className="mt-4 text-sm leading-6 text-[#74808a]">Blanco, gris claro y plateado están reservados para los novios.</p>
         </div>
       </div>
     </section>

@@ -236,6 +236,7 @@
   --sparkle-glow: rgba(128, 143, 153, .4);
 }
 
+.page-frame--dresscode .page-frame__content,
 .page-frame--itinerary .page-frame__content {
   --sparkle-color: rgba(112, 129, 141, .95);
   --sparkle-soft: rgba(112, 129, 141, .5);
