@@ -455,7 +455,7 @@ function DressCode() {
           <Shirt size={22} strokeWidth={1.4} className="text-[#7d8992]" />
           <p className="mt-6 text-[10px] font-semibold uppercase tracking-[.2em] text-[#89949d]">Vestimenta</p>
           <h3 className="script mt-2 text-5xl leading-none text-[#64717b]">Formal</h3>
-          <p className="mt-4 text-sm leading-6 text-[#74808a]">Te invitamos a vestir de manera elegante y apropiada para acompañarnos en esta celebración.</p>
+          <p className="mt-4 text-sm leading-6 text-[#74808a]">Caballeros: camisa de cuello, pantalón formal y calzado que complemente el atuendo; la corbata es opcional. Damas: vestido largo o conjunto formal de pantalón.</p>
         </div>
         <div className="rounded-[1.5rem] border border-[#d3d9de] bg-white p-6 shadow-paper">
           <Palette size={22} strokeWidth={1.4} className="text-[#7d8992]" />
