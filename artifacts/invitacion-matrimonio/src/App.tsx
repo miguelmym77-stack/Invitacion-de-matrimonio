@@ -309,47 +309,32 @@ function TopBar({ onEdit, onShare, shared, homeHref }: { onEdit: () => void; onS
 
 function Cover({ countdown, onMusic, musicOn }: { countdown: ReturnType<typeof useCountdown>; onMusic: () => void; musicOn: boolean }) {
   return (
-    <section id="inicio" className="cover-card relative grid min-h-[calc(100svh-128px)] overflow-hidden rounded-[2rem] border border-[#d0d7dc] bg-[#f8fafb] text-[#5b6872] shadow-paper lg:grid-cols-[.9fr_1.1fr]">
-      <div className="relative z-10 flex flex-col justify-between p-7 sm:p-12 lg:p-16">
-        <div className="reveal flex items-center gap-3 text-[10px] uppercase tracking-[.32em] text-[#7d8992]">
-          <span className="h-px w-8 bg-[#bfc8cf]" /> Nuestra invitación <span className="h-px w-8 bg-[#bfc8cf]" />
+    <section id="inicio" className="cover-card cover-hero relative min-h-[calc(100svh-128px)] overflow-hidden rounded-[2rem] border border-[#d0d7dc] text-white shadow-paper">
+      <img src={heroImage} alt="Miguel Ángel y Daniela el día de su boda" className="photo-wash absolute inset-0 h-full w-full object-cover object-[50%_38%]" />
+      <div className="cover-hero__veil absolute inset-0" />
+      <div className="relative z-10 flex min-h-[calc(100svh-128px)] flex-col items-center justify-between px-7 py-8 text-center sm:px-12 sm:py-12 lg:px-20">
+        <div className="reveal flex items-center gap-3 text-[10px] uppercase tracking-[.32em] text-white/90">
+          <span className="h-px w-8 bg-white/70" /> Nuestra invitación <span className="h-px w-8 bg-white/70" />
         </div>
         <div className="my-12">
-          <p className="reveal reveal-delay-1 mb-4 text-xs uppercase tracking-[.3em] text-[#7d8992]">Nos casamos</p>
-          <h1 className="script reveal reveal-delay-2 max-w-[560px] text-[clamp(3.5rem,14.5vw,7.6rem)] leading-[.78] tracking-[-.03em] text-[#5e6b75]">
-            <span className="block">Miguel Ángel</span>
-            <span className="block text-[.7em] leading-[.78] text-[#aab4bc]">&</span>
-            <span className="block"><em>Daniela</em></span>
+          <p className="reveal reveal-delay-1 mb-5 text-xs uppercase tracking-[.3em] text-white/90">Nos casamos</p>
+          <h1 className="script reveal reveal-delay-2 text-[clamp(4rem,12vw,8.6rem)] leading-[.72] tracking-[-.03em] drop-shadow-[0_2px_12px_rgba(80,90,100,.45)]">
+            Miguel Ángel <span className="text-[#e4e9ec]">&</span><br /><em>Daniela</em>
           </h1>
-          <p className="reveal reveal-delay-3 mt-10 max-w-xs text-sm leading-6 text-[#74808a]">Con mucha alegría queremos compartir contigo el día en que celebraremos nuestro amor.</p>
+          <p className="reveal reveal-delay-3 mx-auto mt-9 max-w-sm text-sm leading-6 text-white/90">Con mucha alegría queremos compartir contigo el día en que celebraremos nuestro amor.</p>
         </div>
-        <div className="reveal reveal-delay-3 flex flex-wrap items-end justify-between gap-3 border-t border-[#cbd2d7] pt-5">
+        <div className="reveal reveal-delay-3 flex w-full max-w-lg flex-wrap items-end justify-center gap-4 border-t border-white/60 pt-5">
           <div>
-            <p className="text-[10px] uppercase tracking-[.22em] text-[#7d8992]">Sábado</p>
-            <p className="serif mt-1 text-3xl text-[#5e6b75]">07.11.26</p>
+            <p className="text-[10px] uppercase tracking-[.22em] text-white/85">Sábado · 7 de noviembre · 2026</p>
           </div>
-          <button onClick={onMusic} data-testid="button-music-cover" className="flex shrink-0 items-center gap-2 rounded-full border border-[#b9c3ca] px-3 py-2 text-[10px] text-[#66747e] transition hover:bg-white sm:text-xs">
-            {musicOn ? <Pause size={14} /> : <Play size={14} />} {musicOn ? 'Pausar' : 'Nuestra melodía'}
+          <div className="cover-countdown rounded-full border border-white/60 bg-white/15 px-3 py-1.5 backdrop-blur-sm">
+            <p className="mono text-[11px] tracking-[.16em] text-white">{String(countdown.days).padStart(2, '0')} DÍAS · {String(countdown.hours).padStart(2, '0')} H · {String(countdown.minutes).padStart(2, '0')} M</p>
+          </div>
+          <button onClick={onMusic} data-testid="button-music-cover" className="flex shrink-0 items-center gap-2 rounded-full border border-white/75 bg-white/10 px-4 py-2 text-[10px] uppercase tracking-[.12em] text-white transition hover:bg-white/25 sm:text-xs">
+            {musicOn ? <Pause size={14} /> : <Play size={14} />} {musicOn ? 'Pausar melodía' : 'Iniciar melodía'}
           </button>
-        </div>
-      </div>
-      <div className="relative min-h-[390px] overflow-hidden lg:min-h-0">
-        <img src={heroImage} alt="Miguel Ángel y Daniela el día de su boda" className="photo-wash absolute inset-0 h-full w-full object-cover object-[50%_38%]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-white/80 via-white/10 to-white/10 lg:bg-gradient-to-r lg:from-[#f8fafb] lg:via-white/5 lg:to-transparent" />
-        <div className="absolute bottom-8 left-7 right-7 flex items-end justify-between sm:bottom-12 sm:left-12 sm:right-12">
-          <div className="rounded-2xl border border-white/70 bg-white/55 px-4 py-3 backdrop-blur-sm">
-            <p className="text-[10px] uppercase tracking-[.3em] text-[#687680]">Faltan</p>
-            <div className="mt-3 grid grid-cols-4 gap-3 sm:gap-5">
-              {[['días', countdown.days], ['horas', countdown.hours], ['min', countdown.minutes], ['seg', countdown.seconds]].map(([label, value]) => (
-                <div key={String(label)}>
-                  <p className="mono text-2xl text-[#5c6973] sm:text-3xl">{String(value).padStart(2, '0')}</p>
-                  <p className="mt-1 text-[9px] uppercase tracking-[.2em] text-[#75818a]">{label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-          <a href="#historia" data-testid="link-scroll-story" className="breathe flex h-11 w-11 items-center justify-center rounded-full border border-white bg-white/60 text-[#65737d] backdrop-blur-sm">
-            <ChevronDown size={18} />
+          <a href="#historia" data-testid="link-scroll-story" className="flex items-center gap-2 rounded-full border border-white/75 bg-white/10 px-4 py-2 text-[10px] uppercase tracking-[.14em] text-white transition hover:bg-white/25">
+            Comenzar <ChevronDown size={14} />
           </a>
         </div>
       </div>
@@ -373,19 +358,27 @@ function Story() {
       <div className="lg:pt-12">
         <SectionHeading
           eyebrow="Nuestra historia"
-          title={<>Una historia<br /><em>para siempre.</em></>}
-          intro="Nuestra historia comenzó de una manera que ninguno de los dos imaginaba. Nos descubrimos preparando nuestros caminos para encontrarnos."
+          title={<>Nuestra<br /><em>Historia</em></>}
         />
-        <div className="mt-10 flex items-center gap-3 text-xs text-[#74808a]"><span className="h-px w-12 bg-[#aeb8bf]" /> Desde 2019</div>
+        <p className="mt-8 max-w-md text-sm leading-7 text-[#74808a]">
+          Nuestra historia comenzó de una manera que ninguno de los dos imaginaba. Con el tiempo descubrimos que Dios había estado preparando nuestros caminos para encontrarnos.
+        </p>
+        <p className="mt-5 max-w-md text-sm leading-7 text-[#74808a]">
+          Entre conversaciones, momentos compartidos y muchos recuerdos, nació un amor que fue creciendo cada día. Hoy miramos hacia adelante con ilusión, sabiendo que queremos caminar juntos de la mano de Dios.
+        </p>
+        <div className="mt-8 text-center sm:text-left">
+          <p className="script text-3xl text-[#87939c]">“Y sobre todas estas cosas, vestíos de amor, que es el vínculo perfecto.”</p>
+          <p className="mt-2 text-[10px] uppercase tracking-[.2em] text-[#9aa5ad]">Colosenses 3:14</p>
+        </div>
       </div>
-      <div className="relative min-h-[420px]">
-        <div className="absolute left-8 top-0 h-[330px] w-[75%] rotate-[-4deg] overflow-hidden rounded-[1.5rem] border-8 border-white bg-[#e1e6ea] shadow-paper">
+      <div className="story-photo-grid relative min-h-[380px]">
+        <div className="absolute left-0 top-2 h-[310px] w-[76%] overflow-hidden rounded-[1.5rem] border-8 border-white bg-[#e1e6ea] shadow-paper sm:left-6">
           <img src={heroImage} alt="Daniela y Miguel Ángel juntos" className="photo-wash h-full w-full object-cover object-[35%]" />
         </div>
-        <div className="absolute bottom-0 right-1 h-[215px] w-[52%] rotate-[5deg] rounded-[1.5rem] border-[12px] border-white bg-[#dfe4e8] shadow-paper">
+        <div className="absolute bottom-0 right-0 h-[190px] w-[48%] overflow-hidden rounded-full border-[10px] border-white bg-[#dfe4e8] shadow-paper sm:right-4">
           <img src={heroImage} alt="" className="h-full w-full object-cover object-[68%_48%] grayscale-[.2]" />
         </div>
-        <div className="float-slow absolute bottom-8 left-0 flex h-20 w-20 items-center justify-center rounded-full border border-[#c4ccd2] bg-[#f4f6f7] text-center text-[10px] uppercase leading-4 tracking-[.12em] text-[#697781]">hechos<br />para<br />elegirnos</div>
+        <div className="float-slow absolute bottom-3 left-2 flex h-16 w-16 items-center justify-center rounded-full border border-[#c4ccd2] bg-[#f4f6f7] text-center text-[9px] uppercase leading-4 tracking-[.12em] text-[#697781]">hechos<br />para<br />elegirnos</div>
       </div>
     </section>
   );
@@ -396,7 +389,7 @@ function Details() {
     { icon: CalendarDays, label: 'Fecha', value: 'Sábado 7 de noviembre de 2026' },
     { icon: Clock3, label: 'Hora', value: '4:00 p. m. · llegada de invitados' },
     { icon: Landmark, label: 'Lugar', value: 'Hacienda Hotel La Extremadura · Casa Principal' },
-    { icon: Users, label: 'Vestimenta', value: 'Formal · tonos claros y plateados' },
+    { icon: Users, label: 'Vestimenta', value: 'Vestimenta formal' },
   ];
   return (
     <section id="celebracion" className="rounded-[2rem] border border-[#d3d9de] bg-white px-6 py-12 sm:px-12 sm:py-16">
@@ -420,8 +413,7 @@ function Itinerary() {
   const events = [
     ['16:00', 'Llegada de invitados', 'Recibimos a quienes hacen parte de nuestra historia.'],
     ['17:00', 'Ceremonia', 'Nos prometemos una vida con más momentos para compartir.'],
-    ['18:30', 'Celebración', 'Una copa, algo de música y abrazos pendientes.'],
-    ['20:00', 'Cena y baile', 'La mesa está lista para contar historias y brindar.'],
+    ['19:00', 'Cena', 'La mesa está lista para contar historias y brindar.'],
   ];
   return (
     <section id="itinerario" className="grid gap-14 rounded-[2rem] border border-[#d3d9de] bg-[#f7f9fa] px-6 py-12 sm:px-12 sm:py-16 lg:grid-cols-[.65fr_1fr]">
@@ -503,12 +495,16 @@ function LocationSection() {
       </div>
       <div className="relative min-h-[330px] overflow-hidden rounded-[2rem] bg-[#e2e7ea] p-5 shadow-paper">
         <div className="relative h-full min-h-[290px] overflow-hidden rounded-[1.25rem] border border-[#c7d0d6] bg-[#edf0f2]">
-          <div className="absolute inset-0 opacity-60" style={{ backgroundImage: 'linear-gradient(35deg, transparent 45%, #c2cbd1 46%, #c2cbd1 48%, transparent 49%), linear-gradient(120deg, transparent 44%, #cbd3d8 45%, #cbd3d8 47%, transparent 48%), linear-gradient(#dbe0e4 1px, transparent 1px), linear-gradient(90deg, #dbe0e4 1px, transparent 1px)', backgroundSize: '100% 100%,100% 100%,34px 34px,34px 34px' }} />
-          <div className="absolute left-[53%] top-[42%] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center">
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#aeb8bf] text-white shadow-lg"><MapPin size={22} /></span>
-            <span className="mt-2 rounded-full bg-white px-3 py-1 text-[10px] uppercase tracking-[.12em] text-[#697781]">La Extremadura</span>
-          </div>
-          <div className="absolute bottom-5 left-5 text-[10px] uppercase tracking-[.2em] text-[#7d8992]">Sabaneta · Antioquia</div>
+          <iframe
+            title="Mapa de Hacienda Hotel La Extremadura"
+            src="https://www.google.com/maps?q=Hacienda+Hotel+La+Extremadura,+Sabaneta,+Antioquia&output=embed"
+            className="h-full min-h-[290px] w-full border-0 grayscale-[.25]"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+          <a href="https://maps.google.com/?q=Hacienda+Hotel+La+Extremadura+Sabaneta+Antioquia" target="_blank" rel="noreferrer" className="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/90 px-3 py-2 text-[10px] font-semibold uppercase tracking-[.12em] text-[#687680] shadow-sm">
+            Abrir en Google Maps <MapPin size={13} />
+          </a>
         </div>
       </div>
     </section>
@@ -541,8 +537,8 @@ function GiftSection() {
     <section id="regalo" className="rounded-[2rem] border border-[#d3d9de] bg-white px-6 py-16 text-center sm:px-12">
       <Gift className="mx-auto text-[#7d8992]" size={24} strokeWidth={1.5} />
       <p className="mt-5 text-[10px] font-semibold uppercase tracking-[.28em] text-[#7d8992]">Lluvia de sobres</p>
-      <h2 className="script mt-3 text-6xl text-[#5d6a74]">Tu presencia es el mejor regalo.</h2>
-      <p className="mx-auto mt-5 max-w-md text-sm leading-6 text-[#74808a]">Nuestro mayor regalo es poder compartir este día contigo. Si deseas tener un detalle, agradecemos con cariño una lluvia de sobres.</p>
+      <h2 className="script mt-3 text-6xl text-[#5d6a74]">Lluvia de sobres</h2>
+      <p className="mx-auto mt-5 max-w-lg text-sm leading-7 text-[#74808a]">Nuestro mayor regalo es poder compartir este día contigo. Tu presencia es lo que más nos ilusiona, si deseas tener un detalle con nosotros, agradecemos con cariño una lluvia de sobres, sin que sea una obligación</p>
       <div className="mx-auto mt-7 h-px w-16 bg-[#bfc8cf]" />
     </section>
   );
