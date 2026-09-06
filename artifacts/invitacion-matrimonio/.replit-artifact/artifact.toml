@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Invitación de matrimonio"
+description = "Invitación digital de matrimonio con módulos configurables, cuenta regresiva, confirmación de asistencia, ubicación, itinerario, galería y música."
+version = "1.0.0"
+id = "artifacts/invitacion-matrimonio"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25513
+
+[services.development]
+run = "pnpm --filter @workspace/invitacion-matrimonio run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/invitacion-matrimonio", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/invitacion-matrimonio/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25513"
+BASE_PATH = "/"
