@@ -157,6 +157,9 @@
   display: flex;
   align-items: center;
   padding: 1rem;
+  --sparkle-color: rgba(255, 255, 255, .95);
+  --sparkle-soft: rgba(255, 255, 255, .7);
+  --sparkle-glow: rgba(255, 255, 255, .75);
 }
 
 .page-frame__content > * { width: 100%; }
@@ -215,11 +218,34 @@
   height: 18px;
   border-radius: 999px;
   background:
-    radial-gradient(circle at center, rgba(255, 255, 255, .98) 0 1.2px, rgba(255, 255, 255, .46) 1.8px 3px, transparent 4.5px),
-    linear-gradient(90deg, transparent 0 43%, rgba(255, 255, 255, .7) 48%, rgba(255, 255, 255, .7) 52%, transparent 57%),
-    linear-gradient(0deg, transparent 0 43%, rgba(255, 255, 255, .7) 48%, rgba(255, 255, 255, .7) 52%, transparent 57%);
-  filter: blur(.1px) drop-shadow(0 0 5px rgba(255, 255, 255, .75));
+    radial-gradient(circle at center, var(--sparkle-color) 0 1.2px, var(--sparkle-soft) 1.8px 3px, transparent 4.5px),
+    linear-gradient(90deg, transparent 0 43%, var(--sparkle-soft) 48%, var(--sparkle-soft) 52%, transparent 57%),
+    linear-gradient(0deg, transparent 0 43%, var(--sparkle-soft) 48%, var(--sparkle-soft) 52%, transparent 57%);
+  filter: blur(.1px) drop-shadow(0 0 5px var(--sparkle-glow));
   animation: star-twinkle 5.4s ease-in-out infinite;
+}
+
+.page-frame--story .page-frame__content,
+.page-frame--details .page-frame__content,
+.page-frame--location .page-frame__content,
+.page-frame--gallery .page-frame__content,
+.page-frame--gift .page-frame__content,
+.page-frame--music .page-frame__content {
+  --sparkle-color: rgba(128, 143, 153, .92);
+  --sparkle-soft: rgba(128, 143, 153, .52);
+  --sparkle-glow: rgba(128, 143, 153, .4);
+}
+
+.page-frame--itinerary .page-frame__content {
+  --sparkle-color: rgba(112, 129, 141, .95);
+  --sparkle-soft: rgba(112, 129, 141, .5);
+  --sparkle-glow: rgba(112, 129, 141, .38);
+}
+
+.page-frame--rsvp .page-frame__content {
+  --sparkle-color: rgba(245, 248, 249, .96);
+  --sparkle-soft: rgba(245, 248, 249, .64);
+  --sparkle-glow: rgba(245, 248, 249, .6);
 }
 
 .silver-star:nth-child(3n) { width: 10px; height: 10px; }

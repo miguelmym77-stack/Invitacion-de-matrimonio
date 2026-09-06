@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { Route, Switch, Router as WouterRouter } from 'wouter';
 import heroImage from './assets/wedding-cover.jpg';
-import weddingMelody from './assets/wedding-melody.wav';
+import weddingMelody from './assets/wedding-melody.mp3';
 
 const queryClient = new QueryClient();
 
@@ -81,25 +81,19 @@ const galleryImages = Object.entries(
   .map(([, source]) => source);
 
 const galleryItems = [
-  { title: 'Nuestro sí', position: 'object-[50%_38%]', layout: 'gallery-tall' },
-  { title: 'Un día para recordar', position: 'object-[48%_46%]', layout: '' },
-  { title: 'Juntos', position: 'object-[64%_48%]', layout: 'gallery-wide' },
-  { title: 'El comienzo de siempre', position: 'object-[35%_45%]', layout: '' },
-  { title: 'Con todo nuestro amor', position: 'object-[58%_62%]', layout: 'gallery-tall' },
-  { title: 'Una nueva historia', position: 'object-[50%_46%]', layout: '' },
-  { title: 'Momentos nuestros', position: 'object-[48%_42%]', layout: '' },
-  { title: 'Donde todo florece', position: 'object-[50%_50%]', layout: 'gallery-wide' },
-  { title: 'La vida compartida', position: 'object-[52%_42%]', layout: '' },
-  { title: 'Siempre juntos', position: 'object-[55%_48%]', layout: '' },
-  { title: 'Una promesa de amor', position: 'object-[50%_50%]', layout: 'gallery-tall' },
-  { title: 'Nuestro lugar feliz', position: 'object-[50%_46%]', layout: '' },
-  { title: 'Risas que guardamos', position: 'object-[52%_50%]', layout: '' },
-  { title: 'Compartir la vida', position: 'object-[50%_45%]', layout: 'gallery-wide' },
-  { title: 'El amor en los detalles', position: 'object-[50%_50%]', layout: '' },
-  { title: 'Dos caminos, una historia', position: 'object-[50%_45%]', layout: '' },
-  { title: 'Lo mejor está por venir', position: 'object-[50%_50%]', layout: 'gallery-tall' },
-  { title: 'Nuestro para siempre', position: 'object-[50%_46%]', layout: '' },
-].map((item, index) => ({ ...item, src: galleryImages[index] }));
+  { sourceIndex: 0, title: 'Nuestro sí', position: 'object-[50%_38%]', layout: 'gallery-tall' },
+  { sourceIndex: 1, title: 'Un día para recordar', position: 'object-[48%_46%]', layout: '' },
+  { sourceIndex: 2, title: 'Juntos', position: 'object-[64%_48%]', layout: 'gallery-wide' },
+  { sourceIndex: 4, title: 'El comienzo de siempre', position: 'object-[50%_48%]', layout: '' },
+  { sourceIndex: 8, title: 'Nuestra familia', position: 'object-[50%_50%]', layout: 'gallery-tall' },
+  { sourceIndex: 9, title: 'Un amor que crece', position: 'object-[50%_50%]', layout: '' },
+  { sourceIndex: 10, title: 'Los que hacen hogar', position: 'object-[50%_50%]', layout: 'gallery-wide' },
+  { sourceIndex: 13, title: 'Risas que guardamos', position: 'object-[50%_50%]', layout: '' },
+  { sourceIndex: 14, title: 'Compartir la vida', position: 'object-[50%_50%]', layout: '' },
+  { sourceIndex: 15, title: 'Juntos somos más', position: 'object-[50%_50%]', layout: 'gallery-tall' },
+].map(({ sourceIndex, ...item }) => ({ ...item, src: galleryImages[sourceIndex] }));
+
+const storyImages = [galleryImages[3], galleryImages[16]];
 
 function useCountdown() {
   const eventDate = useMemo(() => new Date('2026-11-07T16:00:00-05:00'), []);
@@ -293,7 +287,7 @@ function InvitationPage() {
 function PageFrame({ pageKey, nextPage, children }: { pageKey: ModuleKey; nextPage?: { id: string; label: string }; children: ReactNode }) {
   const current = pageOrder.find((page) => page.key === pageKey);
   return (
-    <section className="page-frame snap-start" aria-label={current?.label}>
+    <section className={`page-frame page-frame--${pageKey} snap-start`} aria-label={current?.label}>
       <div className="page-frame__content">
         <div className="silver-stars" aria-hidden="true">
           {Array.from({ length: 14 }, (_, index) => <span key={index} className={`silver-star sparkle-${index + 1}`} />)}
@@ -398,10 +392,10 @@ function Story() {
       </div>
       <div className="story-photo-grid relative min-h-[380px]">
         <div className="absolute left-0 top-2 h-[310px] w-[76%] overflow-hidden rounded-[1.5rem] border-8 border-white bg-[#e1e6ea] shadow-paper sm:left-6">
-          <img src={heroImage} alt="Daniela y Miguel Ángel juntos" className="photo-wash h-full w-full object-cover object-[35%]" />
+          <img src={storyImages[0]} alt="Daniela y Miguel Ángel juntos" className="photo-wash h-full w-full object-cover object-[50%_48%]" />
         </div>
         <div className="absolute bottom-0 right-0 h-[190px] w-[48%] overflow-hidden rounded-full border-[10px] border-white bg-[#dfe4e8] shadow-paper sm:right-4">
-          <img src={heroImage} alt="" className="h-full w-full object-cover object-[68%_48%] grayscale-[.2]" />
+          <img src={storyImages[1]} alt="Miguel Ángel y Daniela celebrando su historia" className="h-full w-full object-cover object-[50%_48%] grayscale-[.2]" />
         </div>
         <div className="float-slow absolute bottom-3 left-2 flex h-16 w-16 items-center justify-center rounded-full border border-[#c4ccd2] bg-[#f4f6f7] text-center text-[9px] uppercase leading-4 tracking-[.12em] text-[#697781]">hechos<br />para<br />elegirnos</div>
       </div>
