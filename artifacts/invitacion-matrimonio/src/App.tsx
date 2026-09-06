@@ -17,6 +17,7 @@ import {
   MapPin,
   Menu,
   Music2,
+  Palette,
   Pause,
   Play,
   Send,
@@ -409,6 +410,7 @@ function Details() {
     { icon: Clock3, label: 'Hora', value: '4:00 p. m. · llegada de invitados' },
     { icon: Landmark, label: 'Lugar', value: 'Hacienda Hotel La Extremadura · Casa Principal' },
     { icon: Users, label: 'Vestimenta', value: 'Vestimenta formal' },
+    { icon: Palette, label: 'Colores reservados', value: 'Blanco, gris claro y plateado · Por favor, no uses estos colores' },
   ];
   return (
     <section id="celebracion" className="rounded-[2rem] border border-[#d3d9de] bg-white px-6 py-12 sm:px-12 sm:py-16">
