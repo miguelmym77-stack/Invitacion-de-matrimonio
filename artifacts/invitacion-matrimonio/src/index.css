@@ -49,7 +49,7 @@
   --popover-border: 31 20% 82%;
   --primary: 15 46% 45%;
   --primary-foreground: 36 45% 97%;
-  --secondary: 142 18% 28%;
+  --secondary: 28 9% 13%;
   --secondary-foreground: 36 45% 97%;
   --muted: 33 22% 89%;
   --muted-foreground: 28 12% 45%;
@@ -62,7 +62,7 @@
   --app-font-mono: 'DM Mono', monospace;
   --radius: 1rem;
   --primary-border: hsl(15 46% 38%);
-  --secondary-border: hsl(142 18% 22%);
+  --secondary-border: hsl(28 9% 10%);
   --muted-border: hsl(31 20% 79%);
   --accent-border: hsl(39 42% 53%);
 }
@@ -81,7 +81,7 @@
   --popover-border: 28 12% 25%;
   --primary: 15 46% 56%;
   --primary-foreground: 28 18% 12%;
-  --secondary: 142 18% 36%;
+  --secondary: 28 9% 22%;
   --secondary-foreground: 35 36% 94%;
   --muted: 28 14% 22%;
   --muted-foreground: 32 12% 67%;
@@ -119,6 +119,33 @@
 .breathe { animation: breathe 4s ease-in-out infinite; }
 .serif { font-family: var(--app-font-serif); }
 .mono { font-family: var(--app-font-mono); }
+.page-frame {
+  min-height: calc(100svh - 84px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1.5rem 0 2.5rem;
+  scroll-margin-top: 84px;
+}
+.page-frame__content { flex: 1; display: flex; align-items: center; }
+.page-frame__content > * { width: 100%; }
+.page-next {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin-top: 1.25rem;
+  padding: .7rem 1rem;
+  border: 1px solid #c8c4bf;
+  border-radius: 999px;
+  color: #716b65;
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  transition: background-color .2s ease, color .2s ease, border-color .2s ease, transform .2s ease;
+}
+.page-next:hover { background: #211e1c; border-color: #211e1c; color: #f8f1e7; transform: translateY(-2px); }
 
 .paper-grain::after {
   content: '';
@@ -134,13 +161,13 @@
 .gallery-grid { display: grid; grid-template-columns: 1.15fr .85fr 1fr; grid-template-rows: 175px 225px; gap: 12px; }
 .gallery-tall { grid-row: span 2; }
 .gallery-wide { grid-column: span 1; }
-.gallery-art, .lightbox-art { background-color: #b89074; background-size: cover; background-position: center; transition: transform .7s cubic-bezier(.2,.75,.25,1); }
+.gallery-art, .lightbox-art { background-color: #b7aaa2; background-size: cover; background-position: center; transition: transform .7s cubic-bezier(.2,.75,.25,1); }
 .group:hover .gallery-art { transform: scale(1.04); }
-.gallery-art-0, .lightbox-art-0 { background-image: linear-gradient(145deg, rgba(49,80,61,.16), transparent 50%), url('./assets/wedding-hero.png'); }
+.gallery-art-0, .lightbox-art-0 { background-image: linear-gradient(145deg, rgba(33,30,28,.18), transparent 50%), url('./assets/wedding-hero.png'); }
 .gallery-art-1, .lightbox-art-1 { background-image: linear-gradient(145deg, #c99e7e, #7c5e50 60%, #dfc09d); }
-.gallery-art-2, .lightbox-art-2 { background-image: radial-gradient(circle at 25% 35%, #ead6b8 0 10%, transparent 11%), radial-gradient(circle at 70% 65%, #7d9a7a 0 17%, transparent 18%), linear-gradient(135deg, #c7866d, #d9b38d); }
+.gallery-art-2, .lightbox-art-2 { background-image: radial-gradient(circle at 25% 35%, #ded9d4 0 10%, transparent 11%), radial-gradient(circle at 70% 65%, #aaa5a0 0 17%, transparent 18%), linear-gradient(135deg, #b8664e, #cfc1b7); }
 .gallery-art-3, .lightbox-art-3 { background-image: linear-gradient(25deg, transparent 35%, rgba(245,218,174,.8) 36% 50%, transparent 51%), linear-gradient(145deg, #8b7060, #d4ac85); }
-.gallery-art-4, .lightbox-art-4 { background-image: linear-gradient(180deg, transparent, rgba(49,80,61,.55)), linear-gradient(120deg, #d8b48e 0 30%, #8f6f59 31% 57%, #d3a77e 58%); }
+.gallery-art-4, .lightbox-art-4 { background-image: linear-gradient(180deg, transparent, rgba(33,30,28,.55)), linear-gradient(120deg, #d8d3ce 0 30%, #8f6f59 31% 57%, #c78267 58%); }
 @media (max-width: 640px) {
   .gallery-grid { grid-template-columns: 1fr 1fr; grid-template-rows: 170px 150px 170px; }
   .gallery-tall { grid-row: span 2; }
