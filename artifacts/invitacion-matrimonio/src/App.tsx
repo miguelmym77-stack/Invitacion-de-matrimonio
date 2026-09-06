@@ -59,7 +59,7 @@ const moduleLabels: Record<ModuleKey, { label: string; note: string }> = {
   gallery: { label: 'Galería', note: 'Momentos que nos inspiran' },
   gift: { label: 'Sugerencia de regalo', note: 'Un gesto desde el corazón' },
   music: { label: 'Música', note: 'La banda sonora de este día' },
-  sparkles: { label: 'Destellos plateados', note: 'Brillos y estrellas animadas en las páginas' },
+  sparkles: { label: 'Destellos plateados', note: 'Pequeños brillos que titilan como estrellas lejanas' },
 };
 
 const pageOrder: Array<{ key: ModuleKey; id: string; label: string }> = [
@@ -74,13 +74,32 @@ const pageOrder: Array<{ key: ModuleKey; id: string; label: string }> = [
   { key: 'music', id: 'musica', label: 'Música' },
 ];
 
+const galleryImages = Object.entries(
+  import.meta.glob('./assets/gallery/*.jpeg', { eager: true, query: '?url', import: 'default' }) as Record<string, string>,
+)
+  .sort(([first], [second]) => first.localeCompare(second))
+  .map(([, source]) => source);
+
 const galleryItems = [
-  { title: 'Nuestro sí', position: 'object-[50%_38%]' },
-  { title: 'Un día para recordar', position: 'object-[48%_46%]' },
-  { title: 'Juntos', position: 'object-[64%_48%]' },
-  { title: 'El comienzo de siempre', position: 'object-[35%_45%]' },
-  { title: 'Con todo nuestro amor', position: 'object-[58%_62%]' },
-];
+  { title: 'Nuestro sí', position: 'object-[50%_38%]', layout: 'gallery-tall' },
+  { title: 'Un día para recordar', position: 'object-[48%_46%]', layout: '' },
+  { title: 'Juntos', position: 'object-[64%_48%]', layout: 'gallery-wide' },
+  { title: 'El comienzo de siempre', position: 'object-[35%_45%]', layout: '' },
+  { title: 'Con todo nuestro amor', position: 'object-[58%_62%]', layout: 'gallery-tall' },
+  { title: 'Una nueva historia', position: 'object-[50%_46%]', layout: '' },
+  { title: 'Momentos nuestros', position: 'object-[48%_42%]', layout: '' },
+  { title: 'Donde todo florece', position: 'object-[50%_50%]', layout: 'gallery-wide' },
+  { title: 'La vida compartida', position: 'object-[52%_42%]', layout: '' },
+  { title: 'Siempre juntos', position: 'object-[55%_48%]', layout: '' },
+  { title: 'Una promesa de amor', position: 'object-[50%_50%]', layout: 'gallery-tall' },
+  { title: 'Nuestro lugar feliz', position: 'object-[50%_46%]', layout: '' },
+  { title: 'Risas que guardamos', position: 'object-[52%_50%]', layout: '' },
+  { title: 'Compartir la vida', position: 'object-[50%_45%]', layout: 'gallery-wide' },
+  { title: 'El amor en los detalles', position: 'object-[50%_50%]', layout: '' },
+  { title: 'Dos caminos, una historia', position: 'object-[50%_45%]', layout: '' },
+  { title: 'Lo mejor está por venir', position: 'object-[50%_50%]', layout: 'gallery-tall' },
+  { title: 'Nuestro para siempre', position: 'object-[50%_46%]', layout: '' },
+].map((item, index) => ({ ...item, src: galleryImages[index] }));
 
 function useCountdown() {
   const eventDate = useMemo(() => new Date('2026-11-07T16:00:00-05:00'), []);
@@ -277,12 +296,7 @@ function PageFrame({ pageKey, nextPage, children }: { pageKey: ModuleKey; nextPa
     <section className="page-frame snap-start" aria-label={current?.label}>
       <div className="page-frame__content">
         <div className="silver-stars" aria-hidden="true">
-          <span className="silver-star star-one" />
-          <span className="silver-star star-two" />
-          <span className="silver-star star-three" />
-          <span className="silver-star star-four" />
-          <span className="silver-star star-five" />
-          <span className="silver-star star-six" />
+          {Array.from({ length: 14 }, (_, index) => <span key={index} className={`silver-star sparkle-${index + 1}`} />)}
         </div>
         {children}
       </div>
@@ -531,8 +545,8 @@ function Gallery({ onOpen }: { onOpen: (index: number) => void }) {
       </div>
       <div className="gallery-grid">
         {galleryItems.map((item, index) => (
-          <button key={item.title} onClick={() => onOpen(index)} data-testid={`button-gallery-${index}`} className={`${index === 0 || index === 4 ? 'gallery-tall' : index === 2 ? 'gallery-wide' : ''} group relative overflow-hidden rounded-[1.25rem] border border-[#d3d9de] bg-[#e4e9ec] text-left shadow-paper`}>
-            <img src={heroImage} alt={item.title} className={`gallery-photo h-full w-full object-cover ${item.position}`} />
+          <button key={item.title} onClick={() => onOpen(index)} data-testid={`button-gallery-${index}`} className={`${item.layout} group relative overflow-hidden rounded-[1.25rem] border border-[#d3d9de] bg-[#e4e9ec] text-left shadow-paper`}>
+            <img src={item.src} alt={item.title} className={`gallery-photo h-full w-full object-cover ${item.position}`} />
             <div className="absolute inset-0 bg-gradient-to-t from-[#53616b]/65 via-transparent to-transparent opacity-0 transition group-hover:opacity-100" />
             <span className="absolute bottom-5 left-5 translate-y-3 text-xs text-white opacity-0 transition group-hover:translate-y-0 group-hover:opacity-100">{item.title}</span>
             <span className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-[#61707a] opacity-0 transition group-hover:opacity-100"><ImageIcon size={14} /></span>
@@ -599,7 +613,7 @@ function Lightbox({ index, onClose, onPrev, onNext }: { index: number; onClose: 
       <button onClick={onClose} data-testid="button-close-lightbox" className="absolute right-5 top-5 rounded-full border border-white/80 p-2 text-white"><X size={20} /></button>
       <button onClick={onPrev} data-testid="button-previous-photo" className="absolute left-4 rounded-full border border-white/80 p-2 text-white sm:left-8"><ChevronLeft size={22} /></button>
       <div className="w-full max-w-3xl">
-        <img src={heroImage} alt={galleryItems[index].title} className="mx-auto aspect-[4/3] max-h-[75vh] w-full rounded-2xl object-cover object-[50%_38%] shadow-2xl" />
+        <img src={galleryItems[index].src} alt={galleryItems[index].title} className="mx-auto max-h-[75vh] w-full rounded-2xl object-contain shadow-2xl" />
         <div className="mt-5 flex items-center justify-between text-white"><p className="script text-5xl">{galleryItems[index].title}</p><span className="mono text-xs text-[#e6ebee]">{String(index + 1).padStart(2, '0')} / {String(galleryItems.length).padStart(2, '0')}</span></div>
       </div>
       <button onClick={onNext} data-testid="button-next-photo" className="absolute right-4 rounded-full border border-white/80 p-2 text-white sm:right-8"><ChevronRight size={22} /></button>
