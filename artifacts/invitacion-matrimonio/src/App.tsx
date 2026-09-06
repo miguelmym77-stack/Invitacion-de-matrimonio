@@ -316,19 +316,18 @@ function Cover({ countdown, onMusic, musicOn }: { countdown: ReturnType<typeof u
         <div className="reveal flex items-center gap-3 text-[10px] uppercase tracking-[.32em] text-white/90">
           <span className="h-px w-8 bg-white/70" /> Nuestra invitación <span className="h-px w-8 bg-white/70" />
         </div>
-        <div className="my-12">
+        <div className="cover-hero__copy absolute bottom-[21%] left-7 right-7 my-0 sm:left-12 sm:right-12 lg:left-20 lg:right-20">
           <p className="reveal reveal-delay-1 mb-5 text-xs uppercase tracking-[.3em] text-white/90">Nos casamos</p>
           <h1 className="script reveal reveal-delay-2 text-[clamp(4rem,12vw,8.6rem)] leading-[.72] tracking-[-.03em] drop-shadow-[0_2px_12px_rgba(80,90,100,.45)]">
             Miguel Ángel <span className="text-[#e4e9ec]">&</span><br /><em>Daniela</em>
           </h1>
-          <p className="reveal reveal-delay-3 mx-auto mt-9 max-w-sm text-sm leading-6 text-white/90">Con mucha alegría queremos compartir contigo el día en que celebraremos nuestro amor.</p>
         </div>
         <div className="reveal reveal-delay-3 flex w-full max-w-lg flex-wrap items-end justify-center gap-4 border-t border-white/60 pt-5">
           <div>
             <p className="text-[10px] uppercase tracking-[.22em] text-white/85">Sábado · 7 de noviembre · 2026</p>
           </div>
           <div className="cover-countdown rounded-full border border-white/60 bg-white/15 px-3 py-1.5 backdrop-blur-sm">
-            <p className="mono text-[11px] tracking-[.16em] text-white">{String(countdown.days).padStart(2, '0')} DÍAS · {String(countdown.hours).padStart(2, '0')} H · {String(countdown.minutes).padStart(2, '0')} M</p>
+            <p className="mono text-[11px] tracking-[.12em] text-white">{String(countdown.days).padStart(2, '0')} DÍAS · {String(countdown.hours).padStart(2, '0')} H · {String(countdown.minutes).padStart(2, '0')} M · {String(countdown.seconds).padStart(2, '0')} S</p>
           </div>
           <button onClick={onMusic} data-testid="button-music-cover" className="flex shrink-0 items-center gap-2 rounded-full border border-white/75 bg-white/10 px-4 py-2 text-[10px] uppercase tracking-[.12em] text-white transition hover:bg-white/25 sm:text-xs">
             {musicOn ? <Pause size={14} /> : <Play size={14} />} {musicOn ? 'Pausar melodía' : 'Iniciar melodía'}
