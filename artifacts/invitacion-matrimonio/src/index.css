@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Parisienne&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
@@ -36,59 +36,60 @@
 }
 
 :root {
-  --background: 35 36% 94%;
-  --foreground: 28 25% 18%;
-  --border: 31 20% 82%;
-  --input: 31 20% 78%;
-  --ring: 15 46% 45%;
-  --card: 35 42% 97%;
-  --card-foreground: 28 25% 18%;
-  --card-border: 31 20% 84%;
-  --popover: 35 42% 97%;
-  --popover-foreground: 28 25% 18%;
-  --popover-border: 31 20% 82%;
-  --primary: 15 46% 45%;
-  --primary-foreground: 36 45% 97%;
-  --secondary: 28 9% 13%;
-  --secondary-foreground: 36 45% 97%;
-  --muted: 33 22% 89%;
-  --muted-foreground: 28 12% 45%;
-  --accent: 39 52% 63%;
-  --accent-foreground: 28 25% 18%;
-  --destructive: 4 54% 46%;
-  --destructive-foreground: 35 42% 97%;
+  --background: 210 22% 94%;
+  --foreground: 210 16% 35%;
+  --border: 210 15% 82%;
+  --input: 210 15% 78%;
+  --ring: 210 15% 58%;
+  --card: 0 0% 100%;
+  --card-foreground: 210 16% 35%;
+  --card-border: 210 15% 84%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 210 16% 35%;
+  --popover-border: 210 15% 82%;
+  --primary: 210 15% 61%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 15% 72%;
+  --secondary-foreground: 210 16% 35%;
+  --muted: 210 18% 90%;
+  --muted-foreground: 210 11% 49%;
+  --accent: 210 15% 77%;
+  --accent-foreground: 210 16% 35%;
+  --destructive: 0 45% 55%;
+  --destructive-foreground: 0 0% 100%;
   --app-font-sans: 'DM Sans', sans-serif;
-  --app-font-serif: 'Instrument Serif', Georgia, serif;
+  --app-font-serif: 'Cormorant Garamond', Georgia, serif;
+  --app-font-script: 'Parisienne', cursive;
   --app-font-mono: 'DM Mono', monospace;
   --radius: 1rem;
-  --primary-border: hsl(15 46% 38%);
-  --secondary-border: hsl(28 9% 10%);
-  --muted-border: hsl(31 20% 79%);
-  --accent-border: hsl(39 42% 53%);
+  --primary-border: hsl(210 15% 54%);
+  --secondary-border: hsl(210 15% 66%);
+  --muted-border: hsl(210 15% 79%);
+  --accent-border: hsl(210 15% 67%);
 }
 
 .dark {
-  --background: 28 18% 12%;
-  --foreground: 35 36% 94%;
-  --border: 28 12% 25%;
-  --input: 28 12% 30%;
-  --ring: 15 46% 56%;
-  --card: 28 17% 16%;
-  --card-foreground: 35 36% 94%;
-  --card-border: 28 12% 25%;
-  --popover: 28 17% 16%;
-  --popover-foreground: 35 36% 94%;
-  --popover-border: 28 12% 25%;
-  --primary: 15 46% 56%;
-  --primary-foreground: 28 18% 12%;
-  --secondary: 28 9% 22%;
-  --secondary-foreground: 35 36% 94%;
-  --muted: 28 14% 22%;
-  --muted-foreground: 32 12% 67%;
-  --accent: 39 52% 63%;
-  --accent-foreground: 28 18% 12%;
-  --destructive: 4 54% 55%;
-  --destructive-foreground: 35 36% 94%;
+  --background: 210 22% 94%;
+  --foreground: 210 16% 35%;
+  --border: 210 15% 82%;
+  --input: 210 15% 78%;
+  --ring: 210 15% 58%;
+  --card: 0 0% 100%;
+  --card-foreground: 210 16% 35%;
+  --card-border: 210 15% 84%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 210 16% 35%;
+  --popover-border: 210 15% 82%;
+  --primary: 210 15% 61%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 15% 72%;
+  --secondary-foreground: 210 16% 35%;
+  --muted: 210 18% 90%;
+  --muted-foreground: 210 11% 49%;
+  --accent: 210 15% 77%;
+  --accent-foreground: 210 16% 35%;
+  --destructive: 0 45% 55%;
+  --destructive-foreground: 0 0% 100%;
 }
 
 @layer base {
@@ -102,10 +103,12 @@
   from { opacity: 0; transform: translateY(18px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
 @keyframes float-slow {
   0%, 100% { transform: translateY(0) rotate(-2deg); }
   50% { transform: translateY(-8px) rotate(1deg); }
 }
+
 @keyframes breathe {
   0%, 100% { transform: scale(1); opacity: .85; }
   50% { transform: scale(1.04); opacity: 1; }
@@ -118,7 +121,9 @@
 .float-slow { animation: float-slow 7s ease-in-out infinite; }
 .breathe { animation: breathe 4s ease-in-out infinite; }
 .serif { font-family: var(--app-font-serif); }
+.script { font-family: var(--app-font-script); }
 .mono { font-family: var(--app-font-mono); }
+
 .page-frame {
   min-height: calc(100svh - 84px);
   display: flex;
@@ -127,8 +132,10 @@
   padding: 1.5rem 0 2.5rem;
   scroll-margin-top: 84px;
 }
+
 .page-frame__content { flex: 1; display: flex; align-items: center; }
 .page-frame__content > * { width: 100%; }
+
 .page-next {
   align-self: center;
   display: inline-flex;
@@ -136,16 +143,17 @@
   gap: .5rem;
   margin-top: 1.25rem;
   padding: .7rem 1rem;
-  border: 1px solid #c8c4bf;
+  border: 1px solid #c4cdd3;
   border-radius: 999px;
-  color: #716b65;
+  color: #6f7d87;
   font-size: .68rem;
   font-weight: 600;
   letter-spacing: .12em;
   text-transform: uppercase;
   transition: background-color .2s ease, color .2s ease, border-color .2s ease, transform .2s ease;
 }
-.page-next:hover { background: #211e1c; border-color: #211e1c; color: #f8f1e7; transform: translateY(-2px); }
+
+.page-next:hover { background: #dbe1e5; border-color: #aeb9c1; color: #5d6b75; transform: translateY(-2px); }
 
 .paper-grain::after {
   content: '';
@@ -153,25 +161,24 @@
   inset: 0;
   z-index: 50;
   pointer-events: none;
-  opacity: .055;
+  opacity: .035;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.34'/%3E%3C/svg%3E");
 }
-.photo-wash { filter: saturate(.72) sepia(.12) contrast(.95); }
-.shadow-paper { box-shadow: 0 24px 60px rgba(61, 45, 33, .12), 0 3px 12px rgba(61, 45, 33, .08); }
+
+.photo-wash { filter: saturate(.58) grayscale(.12) contrast(.95); }
+.cover-card { box-shadow: 0 24px 60px rgba(84, 96, 105, .14), 0 3px 12px rgba(84, 96, 105, .08); }
+.shadow-paper { box-shadow: 0 24px 60px rgba(84, 96, 105, .14), 0 3px 12px rgba(84, 96, 105, .08); }
 .gallery-grid { display: grid; grid-template-columns: 1.15fr .85fr 1fr; grid-template-rows: 175px 225px; gap: 12px; }
 .gallery-tall { grid-row: span 2; }
 .gallery-wide { grid-column: span 1; }
-.gallery-art, .lightbox-art { background-color: #b7aaa2; background-size: cover; background-position: center; transition: transform .7s cubic-bezier(.2,.75,.25,1); }
-.group:hover .gallery-art { transform: scale(1.04); }
-.gallery-art-0, .lightbox-art-0 { background-image: linear-gradient(145deg, rgba(33,30,28,.18), transparent 50%), url('./assets/wedding-hero.png'); }
-.gallery-art-1, .lightbox-art-1 { background-image: linear-gradient(145deg, #c99e7e, #7c5e50 60%, #dfc09d); }
-.gallery-art-2, .lightbox-art-2 { background-image: radial-gradient(circle at 25% 35%, #ded9d4 0 10%, transparent 11%), radial-gradient(circle at 70% 65%, #aaa5a0 0 17%, transparent 18%), linear-gradient(135deg, #b8664e, #cfc1b7); }
-.gallery-art-3, .lightbox-art-3 { background-image: linear-gradient(25deg, transparent 35%, rgba(245,218,174,.8) 36% 50%, transparent 51%), linear-gradient(145deg, #8b7060, #d4ac85); }
-.gallery-art-4, .lightbox-art-4 { background-image: linear-gradient(180deg, transparent, rgba(33,30,28,.55)), linear-gradient(120deg, #d8d3ce 0 30%, #8f6f59 31% 57%, #c78267 58%); }
+.gallery-photo { filter: saturate(.62) grayscale(.15) contrast(.94); transition: transform .7s cubic-bezier(.2,.75,.25,1); }
+.group:hover .gallery-photo { transform: scale(1.04); }
+
 @media (max-width: 640px) {
   .gallery-grid { grid-template-columns: 1fr 1fr; grid-template-rows: 170px 150px 170px; }
   .gallery-tall { grid-row: span 2; }
   .gallery-wide { grid-column: span 2; grid-row: auto; }
+  .page-frame { min-height: calc(100svh - 72px); padding-top: 1rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
