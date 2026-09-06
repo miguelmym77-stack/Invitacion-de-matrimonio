@@ -33,7 +33,7 @@ import weddingMelody from './assets/wedding-melody.wav';
 
 const queryClient = new QueryClient();
 
-type ModuleKey = 'cover' | 'story' | 'details' | 'itinerary' | 'rsvp' | 'location' | 'gallery' | 'gift' | 'music';
+type ModuleKey = 'cover' | 'story' | 'details' | 'itinerary' | 'rsvp' | 'location' | 'gallery' | 'gift' | 'music' | 'sparkles';
 type ModuleSettings = Record<ModuleKey, boolean>;
 
 const defaultModules: ModuleSettings = {
@@ -46,6 +46,7 @@ const defaultModules: ModuleSettings = {
   gallery: true,
   gift: true,
   music: true,
+  sparkles: true,
 };
 
 const moduleLabels: Record<ModuleKey, { label: string; note: string }> = {
@@ -58,6 +59,7 @@ const moduleLabels: Record<ModuleKey, { label: string; note: string }> = {
   gallery: { label: 'Galería', note: 'Momentos que nos inspiran' },
   gift: { label: 'Sugerencia de regalo', note: 'Un gesto desde el corazón' },
   music: { label: 'Música', note: 'La banda sonora de este día' },
+  sparkles: { label: 'Destellos plateados', note: 'Brillos y estrellas animadas en las páginas' },
 };
 
 const pageOrder: Array<{ key: ModuleKey; id: string; label: string }> = [
@@ -184,7 +186,7 @@ function InvitationPage() {
   }, []);
 
   return (
-    <main className="paper-grain min-h-[100dvh] overflow-hidden bg-[#eef1f3]">
+    <main className={`paper-grain ${modules.sparkles ? 'sparkles-enabled' : 'sparkles-disabled'} min-h-[100dvh] overflow-hidden bg-[#eef1f3]`}>
       <TopBar
         onEdit={() => setEditorOpen(true)}
         onShare={shareInvitation}
@@ -273,7 +275,17 @@ function PageFrame({ pageKey, nextPage, children }: { pageKey: ModuleKey; nextPa
   const current = pageOrder.find((page) => page.key === pageKey);
   return (
     <section className="page-frame snap-start" aria-label={current?.label}>
-      <div className="page-frame__content">{children}</div>
+      <div className="page-frame__content">
+        <div className="silver-stars" aria-hidden="true">
+          <span className="silver-star star-one" />
+          <span className="silver-star star-two" />
+          <span className="silver-star star-three" />
+          <span className="silver-star star-four" />
+          <span className="silver-star star-five" />
+          <span className="silver-star star-six" />
+        </div>
+        {children}
+      </div>
       <a href={`#${nextPage?.id ?? 'inicio'}`} data-testid={`button-next-${pageKey}`} className="page-next">
         <span>{nextPage ? `Siguiente: ${nextPage.label}` : 'Volver al inicio'}</span>
         {nextPage ? <ChevronDown size={16} /> : <ChevronDown size={16} className="rotate-180" />}
