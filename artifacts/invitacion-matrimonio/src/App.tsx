@@ -14,17 +14,21 @@ import {
   Image as ImageIcon,
   Landmark,
   LocateFixed,
+  Mail,
   MapPin,
   Menu,
   Music2,
   Palette,
   Pause,
   Play,
+  Plus,
+  Phone,
   Send,
   Share2,
   Shirt,
   Sparkles,
   Star,
+  Trash2,
   Volume2,
   X,
 } from 'lucide-react';
@@ -34,10 +38,13 @@ import weddingMelody from './assets/wedding-melody.mp3';
 
 const queryClient = new QueryClient();
 
-type ModuleKey = 'cover' | 'story' | 'details' | 'dresscode' | 'itinerary' | 'rsvp' | 'location' | 'gallery' | 'gift' | 'music' | 'sparkles';
+type ModuleKey = 'envelope' | 'cover' | 'story' | 'details' | 'dresscode' | 'itinerary' | 'rsvp' | 'location' | 'gallery' | 'gift' | 'music' | 'sparkles';
 type ModuleSettings = Record<ModuleKey, boolean>;
+type Guest = { id: string; names: string; phone: string };
+type RsvpResponse = 'yes' | 'no';
 
 const defaultModules: ModuleSettings = {
+  envelope: true,
   cover: true,
   story: true,
   details: true,
@@ -52,6 +59,7 @@ const defaultModules: ModuleSettings = {
 };
 
 const moduleLabels: Record<ModuleKey, { label: string; note: string }> = {
+  envelope: { label: 'Sobre de invitación', note: 'La bienvenida personalizada' },
   cover: { label: 'Portada y cuenta regresiva', note: 'La primera impresión' },
   story: { label: 'Nuestra historia', note: 'Un pedacito de nosotros' },
   details: { label: 'Detalles del evento', note: 'Fecha, hora y celebración' },
@@ -66,6 +74,7 @@ const moduleLabels: Record<ModuleKey, { label: string; note: string }> = {
 };
 
 const pageOrder: Array<{ key: ModuleKey; id: string; label: string }> = [
+  { key: 'envelope', id: 'sobre', label: 'Sobre' },
   { key: 'cover', id: 'inicio', label: 'Portada' },
   { key: 'story', id: 'historia', label: 'Historia' },
   { key: 'details', id: 'celebracion', label: 'Celebración' },
@@ -77,6 +86,20 @@ const pageOrder: Array<{ key: ModuleKey; id: string; label: string }> = [
   { key: 'gift', id: 'regalo', label: 'Regalo' },
   { key: 'music', id: 'musica', label: 'Música' },
 ];
+
+function loadGuests(): Guest[] {
+  try {
+    const value = JSON.parse(localStorage.getItem('daniela-miguel-guests') || '[]');
+    return Array.isArray(value) ? value.filter((guest): guest is Guest => Boolean(guest?.id && guest?.names)) : [];
+  } catch {
+    return [];
+  }
+}
+
+function initialPageKey(): ModuleKey {
+  const hash = window.location.hash.replace('#', '');
+  return pageOrder.find((page) => page.id === hash)?.key ?? pageOrder[0].key;
+}
 
 const galleryImages = Object.entries(
   import.meta.glob('./assets/gallery/*.jpeg', { eager: true, query: '?url', import: 'default' }) as Record<string, string>,
@@ -147,15 +170,38 @@ function InvitationPage() {
   const [musicOn, setMusicOn] = useState(false);
   const [activePhoto, setActivePhoto] = useState<number | null>(null);
   const [shared, setShared] = useState(false);
-  const [rsvpSent, setRsvpSent] = useState(() => localStorage.getItem('daniela-miguel-rsvp') === 'yes');
+  const [guests, setGuests] = useState<Guest[]>(loadGuests);
+  const inviteeNames = new URLSearchParams(window.location.search).get('para')?.trim() || guests[0]?.names?.trim() || 'Familia invitada';
+  const rsvpStorageKey = `daniela-miguel-rsvp-${encodeURIComponent(inviteeNames)}`;
+  const [rsvpResponse, setRsvpResponse] = useState<RsvpResponse | null>(() => {
+    const stored = localStorage.getItem(rsvpStorageKey);
+    return stored === 'yes' || stored === 'no' ? stored : null;
+  });
+  const [activePage, setActivePage] = useState<ModuleKey>(initialPageKey);
+  const [transitionDirection, setTransitionDirection] = useState<'forward' | 'back'>('forward');
   const countdown = useCountdown();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const visiblePages = pageOrder.filter(({ key }) => modules[key]);
+  const currentPageIndex = Math.max(0, visiblePages.findIndex((page) => page.key === activePage));
 
   const toggleModule = (key: ModuleKey) => {
     const next = { ...modules, [key]: !modules[key] };
     setModules(next);
     localStorage.setItem('daniela-miguel-modules', JSON.stringify(next));
+  };
+
+  const updateGuests = (next: Guest[]) => {
+    setGuests(next);
+    localStorage.setItem('daniela-miguel-guests', JSON.stringify(next));
+  };
+
+  const navigateToPage = (target: string) => {
+    const nextPage = visiblePages.find((page) => page.key === target || page.id === target);
+    if (!nextPage || nextPage.key === activePage) return;
+    const nextIndex = visiblePages.findIndex((page) => page.key === nextPage.key);
+    setTransitionDirection(nextIndex > currentPageIndex ? 'forward' : 'back');
+    setActivePage(nextPage.key);
+    window.history.replaceState(null, '', `#${nextPage.id}`);
   };
 
   const toggleMusic = async () => {
@@ -202,77 +248,97 @@ function InvitationPage() {
     audioRef.current = null;
   }, []);
 
+  useEffect(() => {
+    if (!visiblePages.some((page) => page.key === activePage)) {
+      const fallback = visiblePages[0]?.key ?? 'cover';
+      setActivePage(fallback);
+      window.history.replaceState(null, '', `#${visiblePages[0]?.id ?? 'inicio'}`);
+    }
+  }, [activePage, visiblePages]);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hashPage = pageOrder.find((page) => page.id === window.location.hash.replace('#', ''));
+      if (hashPage && visiblePages.some((page) => page.key === hashPage.key)) {
+        setTransitionDirection(visiblePages.findIndex((page) => page.key === hashPage.key) >= currentPageIndex ? 'forward' : 'back');
+        setActivePage(hashPage.key);
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [currentPageIndex, visiblePages]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [activePage]);
+
+  const previousPage = visiblePages[(currentPageIndex - 1 + visiblePages.length) % visiblePages.length];
+  const nextPage = visiblePages[(currentPageIndex + 1) % visiblePages.length];
+  const activeContent = (() => {
+    switch (activePage) {
+      case 'envelope':
+        return <Envelope names={inviteeNames} onOpen={() => navigateToPage(visiblePages[1]?.id ?? 'sobre')} />;
+      case 'cover':
+        return <Cover countdown={countdown} onMusic={toggleMusic} musicOn={musicOn} onStart={() => navigateToPage(visiblePages[currentPageIndex + 1]?.id ?? 'sobre')} />;
+      case 'story':
+        return <Story />;
+      case 'details':
+        return <Details />;
+      case 'dresscode':
+        return <DressCode />;
+      case 'itinerary':
+        return <Itinerary />;
+      case 'rsvp':
+        return (
+          <Rsvp
+            response={rsvpResponse}
+            inviteeNames={inviteeNames}
+            onSent={(response) => {
+              setRsvpResponse(response);
+              localStorage.setItem(rsvpStorageKey, response);
+            }}
+            onReset={() => {
+              localStorage.removeItem(rsvpStorageKey);
+              setRsvpResponse(null);
+            }}
+          />
+        );
+      case 'location':
+        return <LocationSection />;
+      case 'gallery':
+        return <Gallery onOpen={setActivePhoto} />;
+      case 'gift':
+        return <GiftSection />;
+      case 'music':
+        return <MusicSection musicOn={musicOn} onMusic={toggleMusic} />;
+      default:
+        return <Cover countdown={countdown} onMusic={toggleMusic} musicOn={musicOn} onStart={() => navigateToPage('historia')} />;
+    }
+  })();
+
   return (
-    <main className={`paper-grain ${modules.sparkles ? 'sparkles-enabled' : 'sparkles-disabled'} min-h-[100dvh] overflow-hidden bg-[#eef1f3]`}>
+    <main className={`paper-grain ${modules.sparkles ? 'sparkles-enabled' : 'sparkles-disabled'} min-h-[100dvh] overflow-x-hidden bg-[#eef1f3]`}>
       <TopBar
         onEdit={() => setEditorOpen(true)}
         onShare={shareInvitation}
         shared={shared}
-        homeHref={`#${visiblePages[0]?.id ?? 'inicio'}`}
+        onNavigate={navigateToPage}
       />
-      <div className="mx-auto max-w-[1320px] px-4 pb-16 sm:px-8 lg:px-14">
-        {modules.cover && (
-          <PageFrame pageKey="cover" nextPage={visiblePages[1]}>
-            <Cover countdown={countdown} onMusic={toggleMusic} musicOn={musicOn} />
+      <div className="screen-stage mx-auto max-w-[1320px] px-4 sm:px-8 lg:px-14">
+        <div key={activePage} className={`page-transition page-transition--${transitionDirection}`}>
+          <PageFrame
+            pageKey={activePage}
+            previousPage={previousPage}
+            nextPage={nextPage}
+            pageIndex={currentPageIndex}
+            pageCount={visiblePages.length}
+            onNavigate={navigateToPage}
+          >
+            {activeContent}
           </PageFrame>
-        )}
-        {modules.story && (
-          <PageFrame pageKey="story" nextPage={visiblePages[visiblePages.findIndex((page) => page.key === 'story') + 1]}>
-            <Story />
-          </PageFrame>
-        )}
-        {modules.details && (
-          <PageFrame pageKey="details" nextPage={visiblePages[visiblePages.findIndex((page) => page.key === 'details') + 1]}>
-            <Details />
-          </PageFrame>
-        )}
-        {modules.dresscode && (
-          <PageFrame pageKey="dresscode" nextPage={visiblePages[visiblePages.findIndex((page) => page.key === 'dresscode') + 1]}>
-            <DressCode />
-          </PageFrame>
-        )}
-        {modules.itinerary && (
-          <PageFrame pageKey="itinerary" nextPage={visiblePages[visiblePages.findIndex((page) => page.key === 'itinerary') + 1]}>
-            <Itinerary />
-          </PageFrame>
-        )}
-        {modules.rsvp && (
-          <PageFrame pageKey="rsvp" nextPage={visiblePages[visiblePages.findIndex((page) => page.key === 'rsvp') + 1]}>
-            <Rsvp
-              sent={rsvpSent}
-              onSent={() => {
-                setRsvpSent(true);
-                localStorage.setItem('daniela-miguel-rsvp', 'yes');
-              }}
-            />
-          </PageFrame>
-        )}
-        {modules.location && (
-          <PageFrame pageKey="location" nextPage={visiblePages[visiblePages.findIndex((page) => page.key === 'location') + 1]}>
-            <LocationSection />
-          </PageFrame>
-        )}
-        {modules.gallery && (
-          <PageFrame pageKey="gallery" nextPage={visiblePages[visiblePages.findIndex((page) => page.key === 'gallery') + 1]}>
-            <Gallery onOpen={setActivePhoto} />
-          </PageFrame>
-        )}
-        {modules.gift && (
-          <PageFrame pageKey="gift" nextPage={visiblePages[visiblePages.findIndex((page) => page.key === 'gift') + 1]}>
-            <GiftSection />
-          </PageFrame>
-        )}
-        {modules.music && (
-          <PageFrame pageKey="music" nextPage={visiblePages[visiblePages.findIndex((page) => page.key === 'music') + 1]}>
-            <MusicSection musicOn={musicOn} onMusic={toggleMusic} />
-          </PageFrame>
-        )}
-        <footer className="border-t border-[#cbd2d7] py-12 text-center">
-          <div className="script text-5xl text-[#62707b]">Miguel Ángel <span className="text-[#aab4bc]">&</span> Daniela</div>
-          <p className="mt-3 text-[11px] uppercase tracking-[.28em] text-[#77838d]">07 · 11 · 2026 · Sabaneta, Antioquia</p>
-          <p className="mt-8 text-sm text-[#7d8790]">Gracias por ser parte de nuestra historia.</p>
-        </footer>
+        </div>
       </div>
+      <footer className="screen-credit">Miguel Ángel <span>&</span> Daniela · 07 · 11 · 2026</footer>
       <button
         onClick={() => setEditorOpen(true)}
         data-testid="button-open-editor"
@@ -280,7 +346,7 @@ function InvitationPage() {
       >
         <Menu size={15} /> Editar invitación
       </button>
-      {editorOpen && <EditorPanel modules={modules} onToggle={toggleModule} onClose={() => setEditorOpen(false)} />}
+      {editorOpen && <EditorPanel modules={modules} guests={guests} onToggle={toggleModule} onGuestsChange={updateGuests} onClose={() => setEditorOpen(false)} />}
       {activePhoto !== null && (
         <Lightbox
           index={activePhoto}
@@ -293,35 +359,68 @@ function InvitationPage() {
   );
 }
 
-function PageFrame({ pageKey, nextPage, children }: { pageKey: ModuleKey; nextPage?: { id: string; label: string }; children: ReactNode }) {
+function PageFrame({
+  pageKey,
+  previousPage,
+  nextPage,
+  pageIndex,
+  pageCount,
+  onNavigate,
+  children,
+}: {
+  pageKey: ModuleKey;
+  previousPage?: { id: string; label: string };
+  nextPage?: { id: string; label: string };
+  pageIndex: number;
+  pageCount: number;
+  onNavigate: (target: string) => void;
+  children: ReactNode;
+}) {
   const current = pageOrder.find((page) => page.key === pageKey);
   return (
-    <section className={`page-frame page-frame--${pageKey} snap-start`} aria-label={current?.label}>
+    <section className={`page-frame page-frame--${pageKey}`} aria-label={current?.label}>
       <div className="page-frame__content">
         <div className="silver-stars" aria-hidden="true">
           {Array.from({ length: 14 }, (_, index) => <span key={index} className={`silver-star sparkle-${index + 1}`} />)}
         </div>
         {children}
       </div>
-      <a href={`#${nextPage?.id ?? 'inicio'}`} data-testid={`button-next-${pageKey}`} className="page-next">
-        <span>{nextPage ? `Siguiente: ${nextPage.label}` : 'Volver al inicio'}</span>
-        {nextPage ? <ChevronDown size={16} /> : <ChevronDown size={16} className="rotate-180" />}
-      </a>
+      <div className="page-controls">
+        <button
+          type="button"
+          onClick={() => onNavigate(previousPage?.id ?? 'sobre')}
+          data-testid={`button-previous-${pageKey}`}
+          className="page-control page-control--back"
+        >
+          <ChevronLeft size={15} />
+          <span>{previousPage ? previousPage.label : 'Inicio'}</span>
+        </button>
+        <span className="page-progress">{String(pageIndex + 1).padStart(2, '0')} / {String(pageCount).padStart(2, '0')}</span>
+        <button
+          type="button"
+          onClick={() => onNavigate(nextPage?.id ?? 'sobre')}
+          data-testid={`button-next-${pageKey}`}
+          className="page-next"
+        >
+          <span>{nextPage ? `Siguiente: ${nextPage.label}` : 'Volver al sobre'}</span>
+          {nextPage ? <ChevronDown size={16} /> : <ChevronDown size={16} className="rotate-180" />}
+        </button>
+      </div>
     </section>
   );
 }
 
-function TopBar({ onEdit, onShare, shared, homeHref }: { onEdit: () => void; onShare: () => void; shared: boolean; homeHref: string }) {
+function TopBar({ onEdit, onShare, shared, onNavigate }: { onEdit: () => void; onShare: () => void; shared: boolean; onNavigate: (target: string) => void }) {
   return (
     <header className="mx-auto flex max-w-[1320px] items-center justify-between px-4 py-5 sm:px-8 lg:px-14">
-      <a href={homeHref} data-testid="link-home" className="group flex items-center gap-3">
+      <button type="button" onClick={() => onNavigate('sobre')} data-testid="link-home" className="group flex items-center gap-3">
         <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#bfc8cf] script text-2xl text-[#687680] transition group-hover:rotate-12">M</span>
         <span className="hidden text-[11px] font-semibold uppercase tracking-[.24em] text-[#687680] sm:block">Miguel Ángel & Daniela</span>
-      </a>
+      </button>
       <nav className="hidden items-center gap-6 text-[11px] uppercase tracking-[.2em] text-[#7f8a93] md:flex">
-        <a href="#historia" data-testid="link-story" className="transition hover:text-[#5f6d77]">Historia</a>
-        <a href="#celebracion" data-testid="link-details" className="transition hover:text-[#5f6d77]">Celebración</a>
-        <a href="#galeria" data-testid="link-gallery" className="transition hover:text-[#5f6d77]">Galería</a>
+        <button type="button" onClick={() => onNavigate('historia')} data-testid="link-story" className="transition hover:text-[#5f6d77]">Historia</button>
+        <button type="button" onClick={() => onNavigate('celebracion')} data-testid="link-details" className="transition hover:text-[#5f6d77]">Celebración</button>
+        <button type="button" onClick={() => onNavigate('galeria')} data-testid="link-gallery" className="transition hover:text-[#5f6d77]">Galería</button>
       </nav>
       <div className="flex items-center gap-2">
         <button onClick={onShare} data-testid="button-share" className="flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold text-[#5b6872] transition hover:bg-white">
@@ -336,7 +435,35 @@ function TopBar({ onEdit, onShare, shared, homeHref }: { onEdit: () => void; onS
   );
 }
 
-function Cover({ countdown, onMusic, musicOn }: { countdown: ReturnType<typeof useCountdown>; onMusic: () => void; musicOn: boolean }) {
+function Envelope({ names, onOpen }: { names: string; onOpen: () => void }) {
+  const nameLines = names.split(',').map((name) => name.trim()).filter(Boolean);
+  return (
+    <section id="sobre" className="envelope-page">
+      <div className="envelope-intro">
+        <p className="text-[10px] font-semibold uppercase tracking-[.3em] text-[#7d8992]">Una invitación para</p>
+        <h1 className="script mt-5 text-7xl leading-[.78] text-[#596873] sm:text-8xl">
+          {nameLines.length > 1 ? nameLines.map((name) => <span key={name} className="block">{name}</span>) : names}
+        </h1>
+        <p className="mx-auto mt-7 max-w-sm text-sm leading-6 text-[#74808a]">Con cariño, hemos preparado este sobre para compartir contigo uno de los días más importantes de nuestra historia.</p>
+      </div>
+      <div className="envelope-object" aria-label="Sobre de invitación para abrir">
+        <div className="envelope-card">
+          <div className="envelope-card__paper">
+            <Mail size={18} strokeWidth={1.3} />
+            <span>Con amor</span>
+          </div>
+          <div className="envelope-flap" />
+          <div className="envelope-seal">M <span>&</span> D</div>
+        </div>
+        <button type="button" onClick={onOpen} data-testid="button-open-envelope" className="envelope-open">
+          Abrir invitación <ChevronDown size={15} />
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function Cover({ countdown, onMusic, musicOn, onStart }: { countdown: ReturnType<typeof useCountdown>; onMusic: () => void; musicOn: boolean; onStart: () => void }) {
   return (
     <section id="inicio" className="cover-card cover-hero relative min-h-[calc(100svh-128px)] overflow-hidden rounded-[2rem] border border-[#d0d7dc] text-white shadow-paper">
       <img src={heroImage} alt="Miguel Ángel y Daniela el día de su boda" className="photo-wash absolute inset-0 h-full w-full object-cover object-[50%_38%]" />
@@ -361,9 +488,9 @@ function Cover({ countdown, onMusic, musicOn }: { countdown: ReturnType<typeof u
           <button onClick={onMusic} data-testid="button-music-cover" className="flex shrink-0 items-center gap-2 rounded-full border border-white/75 bg-white/10 px-4 py-2 text-[10px] uppercase tracking-[.12em] text-white transition hover:bg-white/25 sm:text-xs">
             {musicOn ? <Pause size={14} /> : <Play size={14} />} {musicOn ? 'Pausar melodía' : 'Iniciar melodía'}
           </button>
-          <a href="#historia" data-testid="link-scroll-story" className="flex items-center gap-2 rounded-full border border-white/75 bg-white/10 px-4 py-2 text-[10px] uppercase tracking-[.14em] text-white transition hover:bg-white/25">
+          <button type="button" onClick={onStart} data-testid="link-scroll-story" className="flex items-center gap-2 rounded-full border border-white/75 bg-white/10 px-4 py-2 text-[10px] uppercase tracking-[.14em] text-white transition hover:bg-white/25">
             Comenzar <ChevronDown size={14} />
-          </a>
+          </button>
         </div>
       </div>
     </section>
@@ -494,19 +621,17 @@ function Itinerary() {
   );
 }
 
-function Rsvp({ sent, onSent }: { sent: boolean; onSent: () => void }) {
-  const [name, setName] = useState('');
-  const [attendance, setAttendance] = useState('Sí, ahí estaré');
-  const [guests, setGuests] = useState('1 persona');
+function Rsvp({ response, inviteeNames, onSent, onReset }: { response: RsvpResponse | null; inviteeNames: string; onSent: (response: RsvpResponse) => void; onReset: () => void }) {
+  const [attendance, setAttendance] = useState<RsvpResponse>('yes');
 
-  if (sent) {
+  if (response) {
     return (
       <section id="confirmacion" className="rounded-[2rem] border border-[#d3d9de] bg-white px-6 py-16 text-center sm:px-12 sm:py-20">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-[#bfc8cf] text-[#71808a]"><Check size={23} /></div>
-        <p className="mt-6 text-[10px] uppercase tracking-[.3em] text-[#7d8992]">Gracias por confirmar</p>
-        <h2 className="script mt-3 text-6xl text-[#5d6a74]">Nos vemos en la celebración.</h2>
-        <p className="mx-auto mt-5 max-w-md text-sm leading-6 text-[#74808a]">Tu respuesta ha quedado guardada en esta invitación. Estamos felices de contar contigo.</p>
-        <button onClick={() => { localStorage.removeItem('daniela-miguel-rsvp'); window.location.reload(); }} data-testid="button-edit-rsvp" className="mt-8 border-b border-[#aeb8bf] pb-1 text-xs uppercase tracking-[.16em] text-[#6f7c86]">Cambiar respuesta</button>
+        <p className="mt-6 text-[10px] uppercase tracking-[.3em] text-[#7d8992]">Respuesta recibida</p>
+        <h2 className="script mt-3 text-6xl text-[#5d6a74]">{response === 'yes' ? 'Nos vemos en la celebración.' : 'Gracias por avisarnos.'}</h2>
+        <p className="mx-auto mt-5 max-w-md text-sm leading-6 text-[#74808a]">{inviteeNames} · Tu respuesta ha quedado guardada en esta invitación.</p>
+        <button onClick={onReset} data-testid="button-edit-rsvp" className="mt-8 border-b border-[#aeb8bf] pb-1 text-xs uppercase tracking-[.16em] text-[#6f7c86]">Cambiar respuesta</button>
       </section>
     );
   }
@@ -520,25 +645,19 @@ function Rsvp({ sent, onSent }: { sent: boolean; onSent: () => void }) {
       <div className="bg-white/80 p-7 sm:p-12">
         <p className="text-[10px] font-semibold uppercase tracking-[.28em] text-[#7d8992]">Tu lugar está esperando</p>
         <h2 className="script mt-3 text-6xl leading-[.8] text-[#5d6a74]">Confirma tu<br /><em>asistencia.</em></h2>
+        <div className="mt-6 rounded-2xl border border-[#d7dee2] bg-[#f5f7f8] px-4 py-4">
+          <p className="text-[10px] uppercase tracking-[.2em] text-[#89949d]">Invitación para</p>
+          <p className="script mt-2 text-4xl leading-none text-[#66747e]">{inviteeNames}</p>
+        </div>
         <p className="mt-5 text-sm text-[#74808a]">Por favor confirma tu asistencia antes del 15 de octubre de 2026.</p>
-        <form onSubmit={(event) => { event.preventDefault(); if (name.trim()) onSent(); }} className="mt-8 grid gap-4 sm:grid-cols-2">
-          <label className="sm:col-span-2">
-            <span className="sr-only">Nombre completo</span>
-            <input required value={name} onChange={(event) => setName(event.target.value)} data-testid="input-rsvp-name" placeholder="Tu nombre completo" className="w-full border-b border-[#c7d0d6] bg-transparent px-0 py-3 text-sm text-[#5e6b75] outline-none placeholder:text-[#9aa5ad] focus:border-[#7d8992]" />
-          </label>
+        <form onSubmit={(event) => { event.preventDefault(); onSent(attendance); }} className="mt-8 grid gap-4">
           <label>
             <span className="sr-only">Asistencia</span>
-            <select value={attendance} onChange={(event) => setAttendance(event.target.value)} data-testid="select-rsvp-attendance" className="w-full border-b border-[#c7d0d6] bg-transparent py-3 text-sm text-[#66737d] outline-none">
-              <option>Sí, ahí estaré</option><option>No podré acompañarlos</option>
+            <select value={attendance} onChange={(event) => setAttendance(event.target.value as RsvpResponse)} data-testid="select-rsvp-attendance" className="w-full border-b border-[#c7d0d6] bg-transparent py-3 text-sm text-[#66737d] outline-none">
+              <option value="yes">Sí, ahí estaré</option><option value="no">No podré acompañarlos</option>
             </select>
           </label>
-          <label>
-            <span className="sr-only">Acompañantes</span>
-            <select value={guests} onChange={(event) => setGuests(event.target.value)} data-testid="select-rsvp-guests" className="w-full border-b border-[#c7d0d6] bg-transparent py-3 text-sm text-[#66737d] outline-none">
-              <option>1 persona</option><option>2 personas</option><option>3 personas</option>
-            </select>
-          </label>
-          <button type="submit" data-testid="button-submit-rsvp" className="mt-3 flex items-center justify-center gap-2 rounded-full bg-[#aeb8bf] px-5 py-3 text-xs font-semibold text-white transition hover:bg-[#98a5ae] sm:col-span-2 sm:justify-self-start">Confirmar por WhatsApp <Send size={14} /></button>
+          <button type="submit" data-testid="button-submit-rsvp" className="mt-3 flex items-center justify-center gap-2 rounded-full bg-[#aeb8bf] px-5 py-3 text-xs font-semibold text-white transition hover:bg-[#98a5ae] sm:justify-self-start">Guardar respuesta <Check size={14} /></button>
         </form>
       </div>
     </section>
@@ -608,14 +727,80 @@ function MusicSection({ musicOn, onMusic }: { musicOn: boolean; onMusic: () => v
     <section id="musica" className="flex flex-col items-center justify-between gap-6 rounded-[2rem] border border-[#d3d9de] bg-white px-6 py-8 sm:flex-row sm:px-10">
       <div className="flex items-center gap-4">
         <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#e5eaed] text-[#71808a]">{musicOn ? <Volume2 size={18} /> : <Music2 size={18} />}</div>
-        <div><p className="text-[10px] uppercase tracking-[.24em] text-[#7d8992]">Nuestra banda sonora</p><p className="mt-1 text-sm text-[#687680]">Melodía original de muestra, libre para usar</p></div>
+        <div><p className="text-[10px] uppercase tracking-[.24em] text-[#7d8992]">Nuestra banda sonora</p><p className="mt-1 text-sm text-[#687680]">All of Me · John Legend</p></div>
       </div>
       <button onClick={onMusic} data-testid="button-music" className="flex items-center gap-2 rounded-full border border-[#aeb8bf] px-5 py-2.5 text-xs font-semibold text-[#64717b] transition hover:bg-[#eef1f3]">{musicOn ? <Pause size={14} /> : <Play size={14} />}{musicOn ? 'Pausar música' : 'Reproducir música'}</button>
     </section>
   );
 }
 
-function EditorPanel({ modules, onToggle, onClose }: { modules: ModuleSettings; onToggle: (key: ModuleKey) => void; onClose: () => void }) {
+function GuestManager({ guests, onChange }: { guests: Guest[]; onChange: (guests: Guest[]) => void }) {
+  const [names, setNames] = useState('');
+  const [phone, setPhone] = useState('');
+
+  const addGuest = () => {
+    if (!names.trim()) return;
+    onChange([...guests, { id: `${Date.now()}`, names: names.trim(), phone: phone.trim() }]);
+    setNames('');
+    setPhone('');
+  };
+
+  const updateGuest = (id: string, field: 'names' | 'phone', value: string) => {
+    onChange(guests.map((guest) => guest.id === id ? { ...guest, [field]: value } : guest));
+  };
+
+  const guestLink = (guest: Guest) => {
+    const url = new URL(window.location.href);
+    url.search = '';
+    url.hash = 'sobre';
+    url.searchParams.set('para', guest.names);
+    return url.toString();
+  };
+
+  const sendGuestInvitation = (guest: Guest) => {
+    if (!guest.phone.trim()) return;
+    const phoneNumber = guest.phone.replace(/\D/g, '');
+    const message = `Hola ${guest.names}, queremos compartir contigo nuestra invitación de matrimonio: ${guestLink(guest)}`;
+    window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
+  };
+
+  return (
+    <section className="guest-manager mt-8 border-t border-[#d5dce1] pt-6">
+      <div className="flex items-start gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#eef1f3] text-[#75828b]"><Phone size={16} /></div>
+        <div>
+          <p className="text-sm font-semibold text-[#63717b]">Invitados y envíos</p>
+          <p className="mt-1 text-xs leading-5 text-[#8a959d]">Agrega una familia o grupo y genera su enlace personalizado para compartirlo por WhatsApp.</p>
+        </div>
+      </div>
+      <div className="mt-4 grid gap-3">
+        <input value={names} onChange={(event) => setNames(event.target.value)} data-testid="input-guest-names" placeholder="Nombre o nombres de invitados" className="w-full rounded-xl border border-[#d5dce1] bg-[#fbfcfc] px-3 py-3 text-sm text-[#5e6b75] outline-none focus:border-[#9ba8b0]" />
+        <div className="flex gap-2">
+          <input value={phone} onChange={(event) => setPhone(event.target.value)} data-testid="input-guest-phone" placeholder="Número de WhatsApp" inputMode="tel" className="min-w-0 flex-1 rounded-xl border border-[#d5dce1] bg-[#fbfcfc] px-3 py-3 text-sm text-[#5e6b75] outline-none focus:border-[#9ba8b0]" />
+          <button type="button" onClick={addGuest} data-testid="button-add-guest" className="flex shrink-0 items-center gap-1 rounded-xl bg-[#aeb8bf] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#96a3ac]"><Plus size={15} /> Agregar</button>
+        </div>
+      </div>
+      {guests.length > 0 && (
+        <div className="mt-5 space-y-3">
+          {guests.map((guest) => (
+            <div key={guest.id} className="rounded-xl border border-[#d5dce1] bg-[#fbfcfc] p-3">
+              <input value={guest.names} onChange={(event) => updateGuest(guest.id, 'names', event.target.value)} aria-label={`Nombres de ${guest.names}`} className="w-full border-b border-[#d5dce1] bg-transparent pb-2 text-sm font-semibold text-[#63717b] outline-none focus:border-[#9ba8b0]" />
+              <div className="mt-2 flex items-center gap-2">
+                <Phone size={13} className="shrink-0 text-[#8a959d]" />
+                <input value={guest.phone} onChange={(event) => updateGuest(guest.id, 'phone', event.target.value)} aria-label={`Teléfono de ${guest.names}`} placeholder="Sin teléfono" className="min-w-0 flex-1 bg-transparent text-xs text-[#74808a] outline-none" />
+                {guest.phone && <button type="button" onClick={() => sendGuestInvitation(guest)} title="Enviar por WhatsApp" aria-label={`Enviar invitación a ${guest.names}`} className="rounded-full p-1.5 text-[#71808a] transition hover:bg-[#e7ecef]"><Send size={14} /></button>}
+                <button type="button" onClick={() => onChange(guests.filter((item) => item.id !== guest.id))} title="Eliminar invitado" aria-label={`Eliminar ${guest.names}`} className="rounded-full p-1.5 text-[#9aa5ad] transition hover:bg-[#f1e5e5] hover:text-[#8c6262]"><Trash2 size={14} /></button>
+              </div>
+              <button type="button" onClick={() => navigator.clipboard?.writeText(guestLink(guest))} className="mt-3 inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[.12em] text-[#7d8992]">Copiar enlace personalizado</button>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function EditorPanel({ modules, guests, onToggle, onGuestsChange, onClose }: { modules: ModuleSettings; guests: Guest[]; onToggle: (key: ModuleKey) => void; onGuestsChange: (guests: Guest[]) => void; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50">
       <button aria-label="Cerrar editor" data-testid="button-close-editor-overlay" onClick={onClose} className="absolute inset-0 cursor-default bg-[#7a8790]/35 backdrop-blur-[2px]" />
@@ -634,6 +819,7 @@ function EditorPanel({ modules, onToggle, onClose }: { modules: ModuleSettings; 
               </button>
             ))}
           </div>
+          <GuestManager guests={guests} onChange={onGuestsChange} />
         </div>
         <div className="border-t border-[#d5dce1] p-6"><button onClick={onClose} data-testid="button-return-preview" className="flex w-full items-center justify-center gap-2 rounded-full bg-[#aeb8bf] py-3 text-xs font-semibold text-white"><ChevronLeft size={15} /> Volver a la vista previa</button></div>
       </aside>
