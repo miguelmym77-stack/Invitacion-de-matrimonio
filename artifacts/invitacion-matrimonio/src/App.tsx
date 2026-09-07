@@ -179,8 +179,11 @@ function InvitationPage() {
   });
   const [activePage, setActivePage] = useState<ModuleKey>(initialPageKey);
   const [transitionDirection, setTransitionDirection] = useState<'forward' | 'back'>('forward');
+  const [isPageLeaving, setIsPageLeaving] = useState(false);
+  const [hasNavigated, setHasNavigated] = useState(false);
   const countdown = useCountdown();
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const pageTransitionTimer = useRef<number | null>(null);
   const visiblePages = pageOrder.filter(({ key }) => modules[key]);
   const currentPageIndex = Math.max(0, visiblePages.findIndex((page) => page.key === activePage));
 
@@ -197,11 +200,16 @@ function InvitationPage() {
 
   const navigateToPage = (target: string) => {
     const nextPage = visiblePages.find((page) => page.key === target || page.id === target);
-    if (!nextPage || nextPage.key === activePage) return;
+    if (!nextPage || nextPage.key === activePage || isPageLeaving) return;
     const nextIndex = visiblePages.findIndex((page) => page.key === nextPage.key);
     setTransitionDirection(nextIndex > currentPageIndex ? 'forward' : 'back');
-    setActivePage(nextPage.key);
-    window.history.replaceState(null, '', `#${nextPage.id}`);
+    setHasNavigated(true);
+    setIsPageLeaving(true);
+    pageTransitionTimer.current = window.setTimeout(() => {
+      setActivePage(nextPage.key);
+      setIsPageLeaving(false);
+      window.history.replaceState(null, '', `#${nextPage.id}`);
+    }, 560);
   };
 
   const toggleMusic = async () => {
@@ -246,6 +254,7 @@ function InvitationPage() {
   useEffect(() => () => {
     audioRef.current?.pause();
     audioRef.current = null;
+    if (pageTransitionTimer.current) window.clearTimeout(pageTransitionTimer.current);
   }, []);
 
   useEffect(() => {
@@ -261,6 +270,7 @@ function InvitationPage() {
       const hashPage = pageOrder.find((page) => page.id === window.location.hash.replace('#', ''));
       if (hashPage && visiblePages.some((page) => page.key === hashPage.key)) {
         setTransitionDirection(visiblePages.findIndex((page) => page.key === hashPage.key) >= currentPageIndex ? 'forward' : 'back');
+        setHasNavigated(true);
         setActivePage(hashPage.key);
       }
     };
@@ -325,7 +335,7 @@ function InvitationPage() {
         onNavigate={navigateToPage}
       />
       <div className="screen-stage mx-auto max-w-[1320px] px-4 sm:px-8 lg:px-14">
-        <div key={activePage} className={`page-transition page-transition--${transitionDirection}`}>
+        <div key={activePage} className={`page-transition ${hasNavigated ? `page-transition--${transitionDirection}` : 'page-transition--initial'} ${isPageLeaving ? 'page-transition--leaving' : ''}`}>
           <PageFrame
             pageKey={activePage}
             previousPage={previousPage}
@@ -436,9 +446,16 @@ function TopBar({ onEdit, onShare, shared, onNavigate }: { onEdit: () => void; o
 }
 
 function Envelope({ names, onOpen }: { names: string; onOpen: () => void }) {
+  const [isOpening, setIsOpening] = useState(false);
   const nameLines = names.split(',').map((name) => name.trim()).filter(Boolean);
+  const openEnvelope = () => {
+    if (isOpening) return;
+    setIsOpening(true);
+    window.setTimeout(onOpen, 1120);
+  };
+
   return (
-    <section id="sobre" className="envelope-page">
+    <section id="sobre" className={`envelope-page ${isOpening ? 'envelope-page--opening' : ''}`}>
       <div className="envelope-intro">
         <p className="text-[10px] font-semibold uppercase tracking-[.3em] text-[#7d8992]">Una invitación para</p>
         <h1 className="script mt-5 text-7xl leading-[.78] text-[#596873] sm:text-8xl">
@@ -455,8 +472,8 @@ function Envelope({ names, onOpen }: { names: string; onOpen: () => void }) {
           <div className="envelope-flap" />
           <div className="envelope-seal">M <span>&</span> D</div>
         </div>
-        <button type="button" onClick={onOpen} data-testid="button-open-envelope" className="envelope-open">
-          Abrir invitación <ChevronDown size={15} />
+        <button type="button" onClick={openEnvelope} disabled={isOpening} data-testid="button-open-envelope" className="envelope-open">
+          {isOpening ? 'Abriendo invitación' : 'Abrir invitación'} <ChevronDown size={15} />
         </button>
       </div>
     </section>
