@@ -42,6 +42,10 @@ type ModuleKey = 'envelope' | 'cover' | 'story' | 'details' | 'dresscode' | 'iti
 type ModuleSettings = Record<ModuleKey, boolean>;
 type Guest = { id: string; names: string; phone: string };
 type RsvpResponse = 'yes' | 'no';
+const coupleWhatsAppNumbers = [
+  { name: 'Miguel', number: '573223075274' },
+  { name: 'Daniela', number: '573203812448' },
+] as const;
 
 const defaultModules: ModuleSettings = {
   envelope: true,
@@ -171,7 +175,10 @@ function InvitationPage() {
   const [activePhoto, setActivePhoto] = useState<number | null>(null);
   const [shared, setShared] = useState(false);
   const [guests, setGuests] = useState<Guest[]>(loadGuests);
-  const inviteeNames = new URLSearchParams(window.location.search).get('para')?.trim() || guests[0]?.names?.trim() || 'Familia invitada';
+  const queryParams = new URLSearchParams(window.location.search);
+  const personalizedNames = queryParams.get('para')?.trim() || '';
+  const isPublicInvitation = Boolean(personalizedNames);
+  const inviteeNames = personalizedNames || guests[0]?.names?.trim() || 'Familia invitada';
   const rsvpStorageKey = `daniela-miguel-rsvp-${encodeURIComponent(inviteeNames)}`;
   const [rsvpResponse, setRsvpResponse] = useState<RsvpResponse | null>(() => {
     const stored = localStorage.getItem(rsvpStorageKey);
@@ -333,6 +340,7 @@ function InvitationPage() {
         onShare={shareInvitation}
         shared={shared}
         onNavigate={navigateToPage}
+        showEditor={!isPublicInvitation}
       />
       <div className="screen-stage mx-auto max-w-[1320px] px-4 sm:px-8 lg:px-14">
         <div key={activePage} className={`page-transition ${hasNavigated ? `page-transition--${transitionDirection}` : 'page-transition--initial'} ${isPageLeaving ? 'page-transition--leaving' : ''}`}>
@@ -349,14 +357,18 @@ function InvitationPage() {
         </div>
       </div>
       <footer className="screen-credit">Miguel Ángel <span>&</span> Daniela · 07 · 11 · 2026</footer>
-      <button
-        onClick={() => setEditorOpen(true)}
-        data-testid="button-open-editor"
-        className="fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full border border-[#c5cdd3] bg-white/95 px-4 py-3 text-xs font-semibold text-[#5b6872] shadow-[0_8px_25px_rgba(84,96,105,.16)] backdrop-blur-md transition hover:-translate-y-0.5"
-      >
-        <Menu size={15} /> Editar invitación
-      </button>
-      {editorOpen && <EditorPanel modules={modules} guests={guests} onToggle={toggleModule} onGuestsChange={updateGuests} onClose={() => setEditorOpen(false)} />}
+      {!isPublicInvitation && (
+        <>
+          <button
+            onClick={() => setEditorOpen(true)}
+            data-testid="button-open-editor"
+            className="fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full border border-[#c5cdd3] bg-white/95 px-4 py-3 text-xs font-semibold text-[#5b6872] shadow-[0_8px_25px_rgba(84,96,105,.16)] backdrop-blur-md transition hover:-translate-y-0.5"
+          >
+            <Menu size={15} /> Editar invitación
+          </button>
+          {editorOpen && <EditorPanel modules={modules} guests={guests} onToggle={toggleModule} onGuestsChange={updateGuests} onClose={() => setEditorOpen(false)} />}
+        </>
+      )}
       {activePhoto !== null && (
         <Lightbox
           index={activePhoto}
@@ -420,7 +432,7 @@ function PageFrame({
   );
 }
 
-function TopBar({ onEdit, onShare, shared, onNavigate }: { onEdit: () => void; onShare: () => void; shared: boolean; onNavigate: (target: string) => void }) {
+function TopBar({ onEdit, onShare, shared, onNavigate, showEditor }: { onEdit: () => void; onShare: () => void; shared: boolean; onNavigate: (target: string) => void; showEditor: boolean }) {
   return (
     <header className="mx-auto flex max-w-[1320px] items-center justify-between px-4 py-5 sm:px-8 lg:px-14">
       <button type="button" onClick={() => onNavigate('sobre')} data-testid="link-home" className="group flex items-center gap-3">
@@ -437,9 +449,11 @@ function TopBar({ onEdit, onShare, shared, onNavigate }: { onEdit: () => void; o
           {shared ? <Check size={15} /> : <Share2 size={15} />}
           <span className="hidden sm:inline">{shared ? 'Enlace copiado' : 'Compartir'}</span>
         </button>
-        <button onClick={onEdit} data-testid="button-top-editor" className="rounded-full bg-[#aeb8bf] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#97a3ac]">
-          Vista de edición
-        </button>
+        {showEditor && (
+          <button onClick={onEdit} data-testid="button-top-editor" className="rounded-full bg-[#aeb8bf] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#97a3ac]">
+            Vista de edición
+          </button>
+        )}
       </div>
     </header>
   );
@@ -640,6 +654,7 @@ function Itinerary() {
 
 function Rsvp({ response, inviteeNames, onSent, onReset }: { response: RsvpResponse | null; inviteeNames: string; onSent: (response: RsvpResponse) => void; onReset: () => void }) {
   const [attendance, setAttendance] = useState<RsvpResponse>('yes');
+  const [whatsappStatus, setWhatsappStatus] = useState<'opened' | 'blocked' | null>(null);
 
   if (response) {
     return (
@@ -648,6 +663,22 @@ function Rsvp({ response, inviteeNames, onSent, onReset }: { response: RsvpRespo
         <p className="mt-6 text-[10px] uppercase tracking-[.3em] text-[#7d8992]">Respuesta recibida</p>
         <h2 className="script mt-3 text-6xl text-[#5d6a74]">{response === 'yes' ? 'Nos vemos en la celebración.' : 'Gracias por avisarnos.'}</h2>
         <p className="mx-auto mt-5 max-w-md text-sm leading-6 text-[#74808a]">{inviteeNames} · Tu respuesta ha quedado guardada en esta invitación.</p>
+        <div className="mx-auto mt-6 max-w-md rounded-2xl border border-[#d7dee2] bg-[#f5f7f8] px-4 py-4 text-left">
+          <p className="text-xs leading-5 text-[#74808a]">Se abrieron los chats de WhatsApp de Miguel y Daniela con tu respuesta lista. Pulsa “Enviar” en cada chat para confirmarles.</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {coupleWhatsAppNumbers.map((contact) => (
+              <a
+                key={contact.number}
+                href={`https://wa.me/${contact.number}?text=${encodeURIComponent(`Respuesta de ${inviteeNames}: ${response === 'yes' ? 'Sí, asistiré a la celebración.' : 'No podré acompañarlos.'}`)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full border border-[#bfc8cf] px-3 py-2 text-[10px] font-semibold uppercase tracking-[.1em] text-[#687680] transition hover:bg-white"
+              >
+                WhatsApp {contact.name}
+              </a>
+            ))}
+          </div>
+        </div>
         <button onClick={onReset} data-testid="button-edit-rsvp" className="mt-8 border-b border-[#aeb8bf] pb-1 text-xs uppercase tracking-[.16em] text-[#6f7c86]">Cambiar respuesta</button>
       </section>
     );
@@ -667,14 +698,23 @@ function Rsvp({ response, inviteeNames, onSent, onReset }: { response: RsvpRespo
           <p className="script mt-2 text-4xl leading-none text-[#66747e]">{inviteeNames}</p>
         </div>
         <p className="mt-5 text-sm text-[#74808a]">Por favor confirma tu asistencia antes del 15 de octubre de 2026.</p>
-        <form onSubmit={(event) => { event.preventDefault(); onSent(attendance); }} className="mt-8 grid gap-4">
+        <form onSubmit={(event) => {
+          event.preventDefault();
+          onSent(attendance);
+          const message = `Respuesta de ${inviteeNames}: ${attendance === 'yes' ? 'Sí, asistiré a la celebración.' : 'No podré acompañarlos.'}`;
+          const openedChats = coupleWhatsAppNumbers
+            .map((contact) => window.open(`https://wa.me/${contact.number}?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer'))
+            .filter(Boolean).length;
+          setWhatsappStatus(openedChats === coupleWhatsAppNumbers.length ? 'opened' : 'blocked');
+        }} className="mt-8 grid gap-4">
           <label>
             <span className="sr-only">Asistencia</span>
             <select value={attendance} onChange={(event) => setAttendance(event.target.value as RsvpResponse)} data-testid="select-rsvp-attendance" className="w-full border-b border-[#c7d0d6] bg-transparent py-3 text-sm text-[#66737d] outline-none">
               <option value="yes">Sí, ahí estaré</option><option value="no">No podré acompañarlos</option>
             </select>
           </label>
-          <button type="submit" data-testid="button-submit-rsvp" className="mt-3 flex items-center justify-center gap-2 rounded-full bg-[#aeb8bf] px-5 py-3 text-xs font-semibold text-white transition hover:bg-[#98a5ae] sm:justify-self-start">Guardar respuesta <Check size={14} /></button>
+          <button type="submit" data-testid="button-submit-rsvp" className="mt-3 flex items-center justify-center gap-2 rounded-full bg-[#aeb8bf] px-5 py-3 text-xs font-semibold text-white transition hover:bg-[#98a5ae] sm:justify-self-start">Enviar respuestas <Send size={14} /></button>
+          {whatsappStatus === 'blocked' && <p className="text-xs leading-5 text-[#8a959d]">El navegador bloqueó una ventana de WhatsApp. La respuesta quedó guardada; usa los botones de WhatsApp que aparecerán en la confirmación.</p>}
         </form>
       </div>
     </section>
